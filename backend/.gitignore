@@ -1,0 +1,13 @@
+# Compiled artifacts
+/target
+Cargo.lock
+
+# Environment variables (Sensitive)
+.env
+
+# User Uploads
+/uploads/*
+!/uploads/.gitkeep
+
+# OS specific
+.DS_Store

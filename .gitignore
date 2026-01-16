@@ -1,0 +1,42 @@
+# Rust / Cargo
+target/
+**/target/
+debug/
+release/
+*.rs.bk
+Cargo.lock
+
+# Environment variables (Sensitive)
+.env
+.env.*
+!.env.example
+
+# OS specific
+.DS_Store
+Thumbs.db
+.Spotlight-V100
+.Trashes
+
+# IDE / Editors
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.project
+.settings/
+.classpath
+
+# Dioxus / Frontend specific
+dist/
+**/dist/
+public/assets/tailwind.css
+
+# User Uploads / Data
+uploads/
+**/uploads/*
+!**/uploads/.gitkeep
+
+# Temporary files
+tmp/
+node_modules/

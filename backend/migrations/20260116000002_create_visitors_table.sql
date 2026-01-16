@@ -1,0 +1,6 @@
+CREATE TABLE IF NOT EXISTS visitors (
+    ip_hash VARCHAR(64) PRIMARY KEY,
+    visit_count INTEGER NOT NULL DEFAULT 1,
+    first_seen_at TIMESTAMP NOT NULL DEFAULT NOW(),
+    last_seen_at TIMESTAMP NOT NULL DEFAULT NOW()
+);

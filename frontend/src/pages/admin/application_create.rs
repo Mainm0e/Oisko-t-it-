@@ -14,8 +14,11 @@ pub fn ApplicationCreate() -> Element {
     let mut cv_path = use_signal(|| "".to_string());
     let mut cover_letter = use_signal(|| "".to_string());
     let mut cover_letter_path = use_signal(|| "".to_string());
+    let mut logo_url = use_signal(|| "".to_string());
+    let mut description = use_signal(|| "".to_string());
     let mut error_msg = use_signal(|| "".to_string());
     let mut uploading = use_signal(|| false);
+    let mut fetching_intel = use_signal(|| false);
 
     let create_app = move |_| async move {
         let payload = CreateApplicationPayload {
@@ -56,6 +59,16 @@ pub fn ApplicationCreate() -> Element {
                 None
             } else {
                 Some(cover_letter_path())
+            },
+            logo_url: if logo_url().is_empty() {
+                None
+            } else {
+                Some(logo_url())
+            },
+            description: if description().is_empty() {
+                None
+            } else {
+                Some(description())
             },
         };
 
@@ -123,13 +136,41 @@ pub fn ApplicationCreate() -> Element {
                         }
                         div {
                             label { class: "block text-sm font-medium leading-6 text-gray-300", "Website" }
-                            div { class: "mt-2",
+                            div { class: "mt-2 flex gap-2",
                                 input {
                                     r#type: "text",
                                     class: "block w-full rounded-md border-0 py-1.5 bg-gray-900/50 text-white shadow-sm ring-1 ring-inset ring-white/10 placeholder:text-gray-500 focus:ring-2 focus:ring-inset focus:ring-indigo-500 sm:text-sm sm:leading-6",
                                     placeholder: "https://...",
                                     value: "{company_website}",
                                     oninput: move |e| company_website.set(e.value())
+                                }
+                                button {
+                                    class: "bg-indigo-600/20 border border-indigo-500/30 text-indigo-400 px-3 rounded-md hover:bg-indigo-600/40 transition-all text-xs font-bold whitespace-nowrap disabled:opacity-50",
+                                    disabled: "{fetching_intel}",
+                                    onclick: move |_| {
+                                        let url = company_website();
+                                        if !url.is_empty() {
+                                            spawn(async move {
+                                                fetching_intel.set(true);
+                                                match crate::services::application_service::fetch_company_intel(&url).await {
+                                                    Ok(intel) => {
+                                                        if let Some(name) = intel.company_name {
+                                                            company.set(name);
+                                                        }
+                                                        if let Some(desc) = intel.description {
+                                                            description.set(desc);
+                                                        }
+                                                        if let Some(logo) = intel.logo_url {
+                                                            logo_url.set(logo);
+                                                        }
+                                                    }
+                                                    Err(e) => error_msg.set(format!("Intel fetch failed: {}", e)),
+                                                }
+                                                fetching_intel.set(false);
+                                            });
+                                        }
+                                    },
+                                    if fetching_intel() { "..." } else { "SCAN WEB" }
                                 }
                             }
                         }
@@ -143,6 +184,37 @@ pub fn ApplicationCreate() -> Element {
                                 class: "block w-full rounded-md border-0 py-1.5 bg-gray-900/50 text-white shadow-sm ring-1 ring-inset ring-white/10 placeholder:text-gray-500 focus:ring-2 focus:ring-inset focus:ring-indigo-500 sm:text-sm sm:leading-6",
                                 value: "{role}",
                                 oninput: move |e| role.set(e.value())
+                            }
+                        }
+                    }
+
+                    div {
+                        label { class: "block text-sm font-medium leading-6 text-gray-300", "Company Description" }
+                        div { class: "mt-2",
+                            textarea {
+                                class: "block w-full rounded-md border-0 py-1.5 bg-gray-900/50 text-white shadow-sm ring-1 ring-inset ring-white/10 placeholder:text-gray-500 focus:ring-2 focus:ring-inset focus:ring-indigo-500 sm:text-sm sm:leading-6 min-h-[80px]",
+                                placeholder: "Strategic summary of the company...",
+                                value: "{description}",
+                                oninput: move |e| description.set(e.value())
+                            }
+                        }
+                    }
+
+                    div {
+                        label { class: "block text-sm font-medium leading-6 text-gray-300", "Logo URL" }
+                        div { class: "mt-2 flex gap-4 items-center",
+                            if !logo_url().is_empty() {
+                                img {
+                                    src: "{logo_url}",
+                                    class: "w-10 h-10 rounded bg-white/5 object-contain",
+                                }
+                            }
+                            input {
+                                r#type: "text",
+                                class: "block w-full rounded-md border-0 py-1.5 bg-gray-900/50 text-white shadow-sm ring-1 ring-inset ring-white/10 placeholder:text-gray-500 focus:ring-2 focus:ring-inset focus:ring-indigo-500 sm:text-sm sm:leading-6",
+                                placeholder: "https://...",
+                                value: "{logo_url}",
+                                oninput: move |e| logo_url.set(e.value())
                             }
                         }
                     }

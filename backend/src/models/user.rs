@@ -11,5 +11,6 @@ pub struct User {
     pub created_at: chrono::NaiveDateTime,
     pub is_verified: bool,
     #[serde(skip_serializing)]
+    #[allow(dead_code)]
     pub verification_token: Option<String>,
 }

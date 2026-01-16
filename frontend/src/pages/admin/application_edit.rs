@@ -14,6 +14,8 @@ pub fn ApplicationEdit(id: String) -> Element {
     let mut cv_path = use_signal(|| "".to_string());
     let mut cover_letter = use_signal(|| "".to_string());
     let mut cover_letter_path = use_signal(|| "".to_string());
+    let mut logo_url = use_signal(|| "".to_string());
+    let mut description = use_signal(|| "".to_string());
     let mut error_msg = use_signal(|| "".to_string());
     let mut uploading = use_signal(|| false);
 
@@ -31,6 +33,8 @@ pub fn ApplicationEdit(id: String) -> Element {
                 cv_path.set(app.cv_path.unwrap_or_default());
                 cover_letter.set(app.cover_letter.unwrap_or_default());
                 cover_letter_path.set(app.cover_letter_path.unwrap_or_default());
+                logo_url.set(app.logo_url.unwrap_or_default());
+                description.set(app.description.unwrap_or_default());
             }
             Err(e) => error_msg.set(format!("Failed to load: {}", e)),
         }
@@ -50,6 +54,8 @@ pub fn ApplicationEdit(id: String) -> Element {
                 cv_path: Some(cv_path()).filter(|s| !s.is_empty()),
                 cover_letter: Some(cover_letter()).filter(|s| !s.is_empty()),
                 cover_letter_path: Some(cover_letter_path()).filter(|s| !s.is_empty()),
+                logo_url: Some(logo_url()).filter(|s| !s.is_empty()),
+                description: Some(description()).filter(|s| !s.is_empty()),
             };
 
             match crate::services::application_service::update_application(&id, payload).await {
@@ -137,6 +143,37 @@ pub fn ApplicationEdit(id: String) -> Element {
                                 class: "block w-full rounded-md border-0 py-1.5 bg-gray-900/50 text-white shadow-sm ring-1 ring-inset ring-white/10 placeholder:text-gray-500 focus:ring-2 focus:ring-inset focus:ring-indigo-500 sm:text-sm sm:leading-6",
                                 value: "{role}",
                                 oninput: move |e| role.set(e.value())
+                            }
+                        }
+                    }
+
+                    div {
+                        label { class: "block text-sm font-medium leading-6 text-gray-300", "Company Description" }
+                        div { class: "mt-2",
+                            textarea {
+                                class: "block w-full rounded-md border-0 py-1.5 bg-gray-900/50 text-white shadow-sm ring-1 ring-inset ring-white/10 placeholder:text-gray-500 focus:ring-2 focus:ring-inset focus:ring-indigo-500 sm:text-sm sm:leading-6 min-h-[80px]",
+                                placeholder: "Strategic summary of the company...",
+                                value: "{description}",
+                                oninput: move |e| description.set(e.value())
+                            }
+                        }
+                    }
+
+                    div {
+                        label { class: "block text-sm font-medium leading-6 text-gray-300", "Logo URL" }
+                        div { class: "mt-2 flex gap-4 items-center",
+                            if !logo_url().is_empty() {
+                                img {
+                                    src: "{logo_url}",
+                                    class: "w-10 h-10 rounded bg-white/5 object-contain",
+                                }
+                            }
+                            input {
+                                r#type: "text",
+                                class: "block w-full rounded-md border-0 py-1.5 bg-gray-900/50 text-white shadow-sm ring-1 ring-inset ring-white/10 placeholder:text-gray-500 focus:ring-2 focus:ring-inset focus:ring-indigo-500 sm:text-sm sm:leading-6",
+                                placeholder: "https://...",
+                                value: "{logo_url}",
+                                oninput: move |e| logo_url.set(e.value())
                             }
                         }
                     }

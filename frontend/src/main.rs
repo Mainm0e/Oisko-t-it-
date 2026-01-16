@@ -1,4 +1,5 @@
 use dioxus::prelude::*;
+use std::collections::HashSet;
 
 mod components;
 mod models;
@@ -76,7 +77,6 @@ fn App() -> Element {
     }
 }
 
-/// Home page
 #[component]
 fn Home() -> Element {
     let applications = use_resource(move || async move {
@@ -84,99 +84,156 @@ fn Home() -> Element {
     });
 
     rsx! {
-        div { class: "max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 relative min-h-screen",
-            // Simple Header
-            div { class: "flex flex-col items-center justify-center mb-20",
-                 h1 {
-                    class: "text-5xl md:text-7xl font-extrabold tracking-widest text-center mb-4 transition-colors duration-300",
-                    style: "font-family: 'Orbitron', sans-serif; color: var(--text-color);",
+        div { class: "max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 relative min-h-screen scanline",
+            // Header
+            div { class: "flex flex-col items-center justify-center mb-24 relative",
+                div { class: "absolute -top-10 w-64 h-64 bg-accent-glow blur-[100px] opacity-20 -z-10" }
+                h1 {
+                    class: "text-6xl md:text-8xl font-black tracking-tighter text-center mb-6 animate-pulse",
+                    style: "color: var(--text-color); text-shadow: 0 0 20px var(--accent-glow);",
                     "OISKO TÖITÄ"
                 }
-                p {
-                    class: "text-lg tracking-[0.2em] uppercase font-light transition-colors duration-300",
-                    style: "color: var(--text-color); opacity: 0.7;",
-                    "// CAREER PROTOCOL: ACTIVE"
+                div { class: "flex items-center gap-4 text-xs tracking-[0.4em] uppercase font-bold opacity-60",
+                    span { class: "w-2 h-2 rounded-full bg-green-500 animate-pulse" }
+                    "// NEURAL LINK: STABLE"
+                    span { class: "mx-2 opacity-30", "|" }
+                    "EST: 2026.01.16"
                 }
-            }
-
-            div { class: "flex items-center justify-center mb-12",
-                div { class: "h-px w-24 bg-gray-500/50" }
-                h2 {
-                    class: "text-2xl font-bold mx-6 tracking-[0.3em] uppercase transition-colors duration-300",
-                    style: "color: var(--text-color);",
-                     "MISSION LOG"
-                }
-                div { class: "h-px w-24 bg-gray-500/50" }
             }
 
             match &*applications.read() {
-                Some(Ok(apps)) => rsx! {
-                    div { class: "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8",
-                        for app in apps {
-                            Link {
-                                to: Route::ApplicationDetail { id: app.id.to_string() },
-                                class: "noir-card p-6 relative group bg-[var(--card-bg)] block no-underline",
-                                div { class: "flex justify-between items-start mb-6",
-                                    div {
-                                        h3 { class: "text-xl font-bold mb-2 transition-colors duration-300", style: "color: var(--text-color);", "{app.company}" }
-                                        if let Some(website) = &app.company_website {
-                                            // Since this is inside a Link, nested a tags might be tricky but valid HTML5 if interactive content isn't nested.
-                                            // Actually Link renders as 'a'. Nested 'a' is invalid.
-                                            // We should probably use object/embed trick or just make the whole card clickable EXCEPT the external link?
-                                            // Dioxus Link handles internal routing.
-                                            // For simplicity, let's keep the card clickable and if they want external link they can right click or we style it as button.
-                                            // Or we can use an 'object' tag for the internal link to isolate it? No that's complex.
-                                            // Let's just render the text for now, or prevent default on the external link click.
-                                            // Dioxus `Link` might intercept clicks.
+                Some(Ok(apps)) => {
+                    let total_nodes = apps.len();
+                    let success_nodes = apps.iter().filter(|a| a.status == "Offer" || a.status == "Accepted").count();
+                    let success_rate = if total_nodes > 0 { (success_nodes as f32 / total_nodes as f32 * 100.0) as i32 } else { 0 };
+                    let sector_diversity = apps.iter().map(|a| &a.company).collect::<HashSet<_>>().len();
+                    let active_ops = apps.iter().filter(|a| a.status == "Applied" || a.status == "Interviewing").count();
 
-                                            // Alternative: Make the external link a "button" with event propagation stopped?
-                                            // Let's simply display the text "OFFICIAL LINK" but maybe not clickable OR accept that clicking it might trigger the card route too.
-                                            // Actually, `onclick: stop_propagation` works for nested elements.
-                                            // Let's use `a` with `onclick: move |e| e.stop_propagation()`
-                                            a {
-                                                href: "{website}",
-                                                target: "_blank",
-                                                class: "text-xs uppercase tracking-widest hover:underline transition-colors duration-300 z-10 relative",
-                                                style: "color: var(--text-color); opacity: 0.6;",
-                                                onclick: move |e: Event<MouseData>| e.stop_propagation(),
-                                                "LINK_↗"
-                                            }
-                                        }
-                                    }
-                                    span {
-                                        class: "px-2 py-1 text-[10px] font-bold uppercase tracking-widest border transition-colors duration-300",
-                                        style: match app.status.as_str() {
-                                            "Offer" => "color: var(--text-color); border-color: var(--text-color);",
-                                            "Rejected" => "color: var(--text-color); border-color: var(--border-color); text-decoration: line-through;",
-                                            _ => "color: var(--text-color); border-color: var(--border-color); opacity: 0.8;",
-                                        },
-                                        "{app.status}"
+                    rsx! {
+                        // Stats Bar
+                        div { class: "flex flex-wrap items-center justify-between mb-16 border-y border-white/5 py-8 glass px-8 rounded-xl gap-8 relative",
+                            div { class: "flex flex-wrap gap-8 md:gap-16",
+                                div { class: "flex flex-col gap-1",
+                                    span { class: "text-[10px] uppercase tracking-[0.2em] font-black text-accent-color", "Active Ops" }
+                                    span { class: "text-3xl font-black", "{active_ops}" }
+                                }
+                                div { class: "flex flex-col gap-1",
+                                    span { class: "text-[10px] uppercase tracking-[0.2em] font-black opacity-40", "Total Logs" }
+                                    span { class: "text-3xl font-black opacity-80", "{total_nodes}" }
+                                }
+                                div { class: "flex flex-col gap-1",
+                                    span { class: "text-[10px] uppercase tracking-[0.2em] font-black text-green-500", "Success Fact" }
+                                    span { class: "text-3xl font-black text-green-400", "{success_rate}%" }
+                                }
+                                div { class: "flex flex-col gap-1",
+                                    span { class: "text-[10px] uppercase tracking-[0.2em] font-black text-sky-500", "Sector Depth" }
+                                    span { class: "text-3xl font-black text-sky-400", "{sector_diversity}" }
+                                }
+                            }
+
+                            div { class: "hidden lg:flex flex-col items-end gap-3",
+                                h2 { class: "text-[10px] font-black tracking-[0.6em] opacity-40", "GLOBAL_MISSION_LOG" }
+                                div { class: "w-64 h-1.5 bg-white/5 rounded-full overflow-hidden border border-white/5 relative",
+                                    div {
+                                        class: "h-full bg-accent-color shadow-[0_0_20px_var(--accent-glow)] transition-all duration-1000",
+                                        style: "width: {success_rate}%"
                                     }
                                 }
+                            }
+                        }
 
-                                div { class: "space-y-3",
-                                    div { class: "flex items-baseline",
-                                        span { class: "text-xs uppercase tracking-widest w-16 opacity-50", style: "color: var(--text-color);", "Role" }
-                                        span { class: "font-medium transition-colors duration-300", style: "color: var(--text-color);", "{app.role}" }
-                                    }
-                                    div { class: "flex items-baseline",
-                                        span { class: "text-xs uppercase tracking-widest w-16 opacity-50", style: "color: var(--text-color);", "Date" }
-                                        span { class: "font-mono text-sm opacity-80 transition-colors duration-300", style: "color: var(--text-color);", "{app.created_at.to_string().split(' ').next().unwrap_or(&app.created_at.to_string())}" }
+                        if apps.is_empty() {
+                            div { class: "text-center py-40 glass rounded-xl border-dashed border-2 border-white/5",
+                                p { class: "font-mono uppercase tracking-[0.5em] opacity-20 text-xl", "NO DATA PERSISTED IN CURRENT SECTOR." }
+                            }
+                        } else {
+                            div { class: "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10",
+                                for app in apps {
+                                    {
+                                        let date_str = app.created_at.format("%Y.%m.%d / %H:%M").to_string();
+                                        rsx! {
+                                            Link {
+                                                to: Route::ApplicationDetail { id: app.id.to_string() },
+                                                class: "noir-card group bg-[var(--card-bg)] block no-underline rounded-sm border-white/5 overflow-hidden",
+
+                                                // Card Decoration
+                                                div { class: "absolute top-0 right-0 w-16 h-16 bg-gradient-to-bl from-white/5 to-transparent pointer-events-none" }
+
+                                                div { class: "p-8",
+                                                    div { class: "flex justify-between items-start mb-8",
+                                                        div { class: "flex items-start gap-4",
+                                                            if let Some(logo) = &app.logo_url {
+                                                                img {
+                                                                    src: "{logo}",
+                                                                    class: "w-14 h-14 rounded-lg bg-white/5 object-contain border border-white/10 p-1 group-hover:border-accent-color/50 transition-colors",
+                                                                }
+                                                            } else {
+                                                                div { class: "w-14 h-14 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center text-xl font-bold opacity-30",
+                                                                    "?"
+                                                                }
+                                                            }
+                                                            div {
+                                                                h3 { class: "text-2xl font-bold mb-1 group-hover:text-accent-color transition-colors", "{app.company}" }
+                                                                if let Some(website) = &app.company_website {
+                                                                    a {
+                                                                        href: "{website}",
+                                                                        target: "_blank",
+                                                                        class: "text-[10px] uppercase tracking-widest hover:text-white transition-colors z-20 relative inline-flex items-center gap-1 opacity-50",
+                                                                        onclick: move |e: Event<MouseData>| e.stop_propagation(),
+                                                                        "EXT_CMD_SRC"
+                                                                        span { class: "text-[8px]", "↗" }
+                                                                    }
+                                                                }
+                                                            }
+                                                        }
+                                                    }
+
+                                                    div { class: "space-y-6 pt-4 border-t border-white/5",
+                                                        div {
+                                                            div { class: "text-[10px] uppercase tracking-[0.2em] opacity-40 mb-1", "Designation" }
+                                                            div { class: "text-lg font-medium", "{app.role}" }
+                                                        }
+
+                                                        div { class: "flex justify-between items-end",
+                                                            div {
+                                                                div { class: "text-[10px] uppercase tracking-[0.2em] opacity-40 mb-1", "Timestamp" }
+                                                                div { class: "font-mono text-sm opacity-70", "{date_str}" }
+                                                            }
+
+                                                            div {
+                                                                class: "px-4 py-1.5 text-[10px] font-black uppercase tracking-[0.3em] border skew-x-[-15deg] transition-all",
+                                                                style: match app.status.as_str() {
+                                                                    "Offer" => "background: var(--status-offer); color: black; border-color: var(--status-offer); box-shadow: 0 0 15px rgba(16, 185, 129, 0.4);",
+                                                                    "Rejected" => "background: transparent; color: var(--status-rejected); border-color: var(--status-rejected); opacity: 0.6;",
+                                                                    "Interviewing" => "background: var(--status-interview); color: black; border-color: var(--status-interview); box-shadow: 0 0 15px rgba(14, 165, 233, 0.4);",
+                                                                    _ => "background: rgba(255,255,255,0.05); color: white; border-color: white/20;",
+                                                                },
+                                                                div { class: "skew-x-[15deg]", "{app.status}" }
+                                                            }
+                                                        }
+                                                    }
+                                                }
+
+                                                // Footer Interactive Element
+                                                div { class: "h-1 w-0 group-hover:w-full bg-accent-color transition-all duration-500 ease-out" }
+                                            }
+                                        }
                                     }
                                 }
                             }
                         }
                     }
-                    if apps.is_empty() {
-                         div { class: "text-center py-12 font-mono uppercase tracking-widest opacity-50", style: "color: var(--text-color);", "NO DATA FOUND." }
-                    }
                 },
                 Some(Err(e)) => rsx! {
-                    div { class: "text-center py-8 font-mono text-red-500", "SYSTEM ERROR: {e}" }
+                    div { class: "text-center py-20 border border-red-900/50 bg-red-950/20 rounded-xl",
+                        h3 { class: "text-red-500 mb-2 font-black", "CRITICAL SYSTEM ERROR" }
+                        p { class: "font-mono text-sm opacity-60", "{e}" }
+                    }
                 },
                 None => rsx! {
-                    div { class: "flex justify-center py-20",
-                        div { class: "animate-spin rounded-full h-8 w-8 border-t-2 border-b-2", style: "border-color: var(--text-color);" }
+                    div { class: "flex flex-col items-center justify-center py-40 gap-6",
+                        div { class: "animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-accent-color shadow-[0_0_20px_var(--accent-glow)]" }
+                        p { class: "text-xs font-black uppercase tracking-[0.6em] animate-pulse opacity-40", "Synchronizing mission log..." }
                     }
                 }
             }

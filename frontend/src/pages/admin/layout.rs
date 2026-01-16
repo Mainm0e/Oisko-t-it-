@@ -19,11 +19,14 @@ pub fn AdminLayout() -> Element {
         });
     });
 
+    crate::services::sse_service::use_sse();
+    let notifications = crate::services::sse_service::NOTIFICATIONS.read();
+
     rsx! {
         div { class: "flex h-screen bg-[#050510] text-gray-300 font-sans overflow-hidden",
             // Sidebar
             aside { class: "w-72 bg-black/40 backdrop-blur-xl border-r border-cyan-500/20 flex flex-col fixed h-full z-20 shadow-[0_0_20px_rgba(0,0,0,0.5)]",
-                // Header
+                // ... sidebar content ...
                 div { class: "p-8 border-b border-cyan-500/10 relative overflow-hidden group",
                     div { class: "absolute inset-0 bg-cyan-500/5 translate-y-[-100%] group-hover:translate-y-0 transition-transform duration-500 ease-in-out" }
                     h1 {
@@ -76,6 +79,30 @@ pub fn AdminLayout() -> Element {
 
                 div { class: "relative z-10 max-w-7xl mx-auto",
                     Outlet::<crate::Route> {}
+                }
+            }
+
+            // Toast Notifications Container
+            div { class: "fixed bottom-8 right-8 z-50 flex flex-col gap-4 pointer-events-none",
+                for notification in notifications.iter() {
+                    {
+                        let border_color = if notification.type_ == crate::services::sse_service::NotificationType::Comment { "border-cyan-500/40" } else { "border-purple-500/40" };
+                        let text_color = if notification.type_ == crate::services::sse_service::NotificationType::Comment { "text-cyan-400" } else { "text-purple-400" };
+
+                        rsx! {
+                            div {
+                                key: "{notification.id}",
+                                class: "pointer-events-auto bg-black/80 backdrop-blur-md border {border_color} p-4 rounded-lg shadow-[0_0_30px_rgba(0,0,0,0.5)] w-80",
+                                div { class: "flex items-center justify-between mb-1",
+                                    h5 { class: "text-[10px] font-bold tracking-widest {text_color}",
+                                        "{notification.title}"
+                                    }
+                                    span { class: "text-[8px] text-gray-500 font-mono", ":: SIGNAL INTERCEPTED ::" }
+                                }
+                                p { class: "text-sm text-white font-medium", "{notification.message}" }
+                            }
+                        }
+                    }
                 }
             }
         }

@@ -17,6 +17,8 @@ pub struct Application {
     pub cv_path: Option<String>,
     pub cover_letter: Option<String>,
     pub cover_letter_path: Option<String>,
+    pub logo_url: Option<String>,
+    pub description: Option<String>,
     #[serde(default)]
     pub comment_count: Option<i64>,
     pub created_at: chrono::NaiveDateTime,
@@ -35,9 +37,11 @@ pub struct CreateApplicationPayload {
     pub cv_path: Option<String>,
     pub cover_letter: Option<String>,
     pub cover_letter_path: Option<String>,
+    pub logo_url: Option<String>,
+    pub description: Option<String>,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, Default)]
 pub struct UpdateApplicationPayload {
     pub company: Option<String>,
     pub company_website: Option<String>,
@@ -49,6 +53,8 @@ pub struct UpdateApplicationPayload {
     pub cv_path: Option<String>,
     pub cover_letter: Option<String>,
     pub cover_letter_path: Option<String>,
+    pub logo_url: Option<String>,
+    pub description: Option<String>,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]
@@ -58,6 +64,7 @@ pub struct PublicApplication {
     pub company_website: Option<String>,
     pub role: String,
     pub status: String,
+    pub logo_url: Option<String>,
     pub created_at: chrono::NaiveDateTime,
 }
 
@@ -71,6 +78,8 @@ pub struct PublicApplicationDetail {
     pub salary: Option<String>,
     pub cover_letter: Option<String>,
     pub cv_path: Option<String>,
+    pub logo_url: Option<String>,
+    pub description: Option<String>,
     pub created_at: chrono::NaiveDateTime,
 }
 
@@ -116,4 +125,11 @@ pub struct DailyCount {
 pub struct StatusCount {
     pub status: String,
     pub count: i64,
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]
+pub struct CompanyIntel {
+    pub company_name: Option<String>,
+    pub description: Option<String>,
+    pub logo_url: Option<String>,
 }

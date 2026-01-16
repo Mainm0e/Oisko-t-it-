@@ -1,14 +1,22 @@
 use crate::models::application::{Application, CreateApplication, UpdateApplication};
+use crate::models::event::AppEvent;
 use crate::routes::auth::Claims;
+use async_stream::stream;
 use axum::{
     Json,
     extract::{Path, State},
     http::StatusCode,
-    response::IntoResponse,
+    response::{
+        IntoResponse,
+        sse::{Event, Sse},
+    },
 };
+use futures_util::stream::Stream;
 use jsonwebtoken::{DecodingKey, Validation, decode};
 use sqlx::PgPool;
+use std::convert::Infallible;
 use std::env;
+use tokio::sync::broadcast;
 use uuid::Uuid;
 
 // Middleware to extract user_id from JWT
@@ -75,9 +83,9 @@ pub async fn create_application(
         r#"
         INSERT INTO applications (
             user_id, company, company_website, role, status, salary, contact_person, 
-            cv_version, cv_path, cover_letter, cover_letter_path
+            cv_version, cv_path, cover_letter, cover_letter_path, logo_url, description
         )
-        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
         RETURNING *
         "#,
     )
@@ -92,6 +100,8 @@ pub async fn create_application(
     .bind(&payload.cv_path)
     .bind(&payload.cover_letter)
     .bind(&payload.cover_letter_path)
+    .bind(&payload.logo_url)
+    .bind(&payload.description)
     .fetch_one(&pool)
     .await;
 
@@ -131,6 +141,7 @@ pub async fn get_application(
 
 pub async fn update_application(
     State(pool): State<PgPool>,
+    State(tx): State<broadcast::Sender<AppEvent>>,
     Path(id): Path<Uuid>,
     headers: axum::http::HeaderMap,
     Json(payload): Json<UpdateApplication>,
@@ -162,8 +173,10 @@ pub async fn update_application(
             cv_path = COALESCE($8, cv_path),
             cover_letter = COALESCE($9, cover_letter),
             cover_letter_path = COALESCE($10, cover_letter_path),
+            logo_url = COALESCE($11, logo_url),
+            description = COALESCE($12, description),
             updated_at = NOW()
-        WHERE id = $11 AND user_id = $12
+        WHERE id = $13 AND user_id = $14
         RETURNING *
         "#,
     )
@@ -177,13 +190,23 @@ pub async fn update_application(
     .bind(&payload.cv_path)
     .bind(&payload.cover_letter)
     .bind(&payload.cover_letter_path)
+    .bind(&payload.logo_url)
+    .bind(&payload.description)
     .bind(id)
     .bind(user_id)
     .fetch_optional(&pool)
     .await;
 
     match result {
-        Ok(Some(app)) => Json(app).into_response(),
+        Ok(Some(app)) => {
+            // Broadcast update
+            let _ = tx.send(AppEvent::ApplicationStatusUpdated {
+                id: app.id,
+                company: app.company.clone(),
+                status: app.status.clone(),
+            });
+            Json(app).into_response()
+        }
         Ok(None) => (StatusCode::NOT_FOUND, "Application not found").into_response(),
         Err(_) => (StatusCode::INTERNAL_SERVER_ERROR, "Database error").into_response(),
     }
@@ -221,7 +244,7 @@ pub async fn get_public_applications(State(pool): State<PgPool>) -> impl IntoRes
     use crate::models::public_application::PublicApplication;
 
     let applications = sqlx::query_as::<_, PublicApplication>(
-        "SELECT id, company, company_website, role, status, created_at FROM applications ORDER BY created_at DESC",
+        "SELECT id, company, company_website, role, status, logo_url, created_at FROM applications ORDER BY created_at DESC",
     )
     .fetch_all(&pool)
     .await;
@@ -242,7 +265,7 @@ pub async fn get_public_application_detail(
     use crate::models::public_application::PublicApplicationDetail;
 
     let application = sqlx::query_as::<_, PublicApplicationDetail>(
-        "SELECT id, company, company_website, role, status, salary, cover_letter, cv_path, created_at FROM applications WHERE id = $1",
+        "SELECT id, company, company_website, role, status, salary, cover_letter, cv_path, logo_url, description, created_at FROM applications WHERE id = $1",
     )
     .bind(id)
     .fetch_optional(&pool)
@@ -282,10 +305,19 @@ pub async fn get_comments(
 
 pub async fn create_comment(
     State(pool): State<PgPool>,
+    State(tx): State<broadcast::Sender<AppEvent>>,
     Path(application_id): Path<Uuid>,
     Json(payload): Json<crate::models::comment::CreateComment>,
 ) -> impl IntoResponse {
     use crate::models::comment::Comment;
+
+    // Get application info for the event
+    let app_info = sqlx::query!(
+        "SELECT company, role FROM applications WHERE id = $1",
+        application_id
+    )
+    .fetch_optional(&pool)
+    .await;
 
     let result = sqlx::query_as::<_, Comment>(
         "INSERT INTO comments (application_id, visitor_name, content) VALUES ($1, $2, $3) RETURNING *",
@@ -297,12 +329,49 @@ pub async fn create_comment(
     .await;
 
     match result {
-        Ok(comment) => (StatusCode::CREATED, Json(comment)).into_response(),
+        Ok(comment) => {
+            // Broadcast event
+            if let Ok(Some(app)) = app_info {
+                let _ = tx.send(AppEvent::CommentCreated {
+                    id: comment.id,
+                    application_id: comment.application_id,
+                    visitor_name: comment.visitor_name.clone(),
+                    company: app.company,
+                    role: app.role,
+                });
+            }
+            (StatusCode::CREATED, Json(comment)).into_response()
+        }
         Err(e) => {
             tracing::error!("Failed to create comment: {:?}", e);
             (StatusCode::INTERNAL_SERVER_ERROR, "Database error").into_response()
         }
     }
+}
+
+pub async fn sse_handler(
+    State(tx): State<broadcast::Sender<AppEvent>>,
+) -> Sse<impl Stream<Item = Result<Event, Infallible>>> {
+    tracing::info!("DEBUG: SSE connection attempt received");
+    let mut rx = tx.subscribe();
+
+    let stream = stream! {
+        loop {
+            match rx.recv().await {
+                Ok(event) => {
+                    yield Ok(Event::default().json_data(event).unwrap());
+                }
+                Err(tokio::sync::broadcast::error::RecvError::Lagged(_)) => {
+                    continue;
+                }
+                Err(tokio::sync::broadcast::error::RecvError::Closed) => {
+                    break;
+                }
+            }
+        }
+    };
+
+    Sse::new(stream).keep_alive(axum::response::sse::KeepAlive::default())
 }
 
 pub async fn get_recent_comments(

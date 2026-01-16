@@ -22,3 +22,8 @@ tower-http = { version = "0.5", features = ["trace", "cors", "fs"] }
 lettre = "0.11"
 rand = "0.8"
 sha2 = "0.10"
+tokio-stream = "0.1.18"
+async-stream = "0.3.6"
+futures-util = "0.3.31"
+scraper = "0.25.0"
+reqwest = { version = "0.13.1", features = ["json"] }

@@ -1,11 +1,14 @@
+use crate::models::event::AppEvent;
 use axum::{
     Router,
+    extract::FromRef,
     routing::{get, post},
 };
 use dotenvy::dotenv;
 use sqlx::postgres::PgPoolOptions;
 use std::env;
 use std::net::SocketAddr;
+use tokio::sync::broadcast;
 use tower_http::cors::CorsLayer;
 use tower_http::services::ServeDir;
 use tower_http::trace::TraceLayer;
@@ -13,7 +16,25 @@ use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 
 mod db;
 mod models;
-mod routes;
+mod routes; // Added for Company Intel
+
+#[derive(Clone)]
+pub struct AppState {
+    pub pool: sqlx::PgPool,
+    pub tx: broadcast::Sender<AppEvent>,
+}
+
+impl FromRef<AppState> for sqlx::PgPool {
+    fn from_ref(state: &AppState) -> Self {
+        state.pool.clone()
+    }
+}
+
+impl FromRef<AppState> for broadcast::Sender<AppEvent> {
+    fn from_ref(state: &AppState) -> Self {
+        state.tx.clone()
+    }
+}
 
 #[tokio::main]
 async fn main() {
@@ -40,6 +61,9 @@ async fn main() {
         .run(&pool)
         .await
         .expect("Failed to run migrations");
+
+    let (tx, _rx) = broadcast::channel(100);
+    let state = AppState { pool, tx };
 
     let app = Router::new()
         .route("/api/auth/login", post(routes::auth::login))
@@ -77,13 +101,15 @@ async fn main() {
             "/api/comments/recent",
             get(routes::applications::get_recent_comments),
         )
+        .route("/api/intel", get(routes::intel::get_company_intel))
+        .route("/api/events", get(routes::applications::sse_handler))
         .route("/api/upload", post(routes::upload::upload_file))
         .nest_service("/uploads", ServeDir::new("uploads"))
         .layer(TraceLayer::new_for_http())
-        .layer(CorsLayer::permissive()) // For development, allow all. In prod, strict origins.
-        .with_state(pool);
+        .layer(CorsLayer::permissive())
+        .with_state(state);
 
-    let addr = SocketAddr::from(([127, 0, 0, 1], 3000));
+    let addr = SocketAddr::from(([0, 0, 0, 0], 3000));
     tracing::info!("listening on {}", addr);
     let listener = tokio::net::TcpListener::bind(addr).await.unwrap();
     axum::serve(listener, app).await.unwrap();

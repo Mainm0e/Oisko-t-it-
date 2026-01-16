@@ -17,6 +17,8 @@ pub struct Application {
     pub cv_path: Option<String>,
     pub cover_letter: Option<String>,
     pub cover_letter_path: Option<String>,
+    pub logo_url: Option<String>,
+    pub description: Option<String>,
     #[sqlx(default)]
     pub comment_count: Option<i64>,
     pub created_at: NaiveDateTime,
@@ -53,6 +55,8 @@ pub struct CreateApplication {
     pub cv_path: Option<String>,
     pub cover_letter: Option<String>,
     pub cover_letter_path: Option<String>,
+    pub logo_url: Option<String>,
+    pub description: Option<String>,
 }
 
 #[derive(Debug, Deserialize)]
@@ -67,4 +71,6 @@ pub struct UpdateApplication {
     pub cv_path: Option<String>,
     pub cover_letter: Option<String>,
     pub cover_letter_path: Option<String>,
+    pub logo_url: Option<String>,
+    pub description: Option<String>,
 }

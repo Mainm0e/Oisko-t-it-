@@ -2,8 +2,8 @@ use crate::models::application::{Application, CreateApplicationPayload, UpdateAp
 use dioxus::prelude::*;
 use reqwest::header::{AUTHORIZATION, CONTENT_TYPE};
 
-pub const BASE_URL: &str = "http://localhost:3000";
-pub const API_BASE_URL: &str = "http://localhost:3000/api";
+pub const BASE_URL: &str = "http://127.0.0.1:3000";
+pub const API_BASE_URL: &str = "http://127.0.0.1:3000/api";
 
 pub async fn get_token() -> Option<String> {
     dioxus_logger::tracing::info!("DEBUG: get_token called");
@@ -98,20 +98,41 @@ pub async fn update_application(
 }
 
 pub async fn delete_application(id: &str) -> Result<(), String> {
-    let token = get_token().await.ok_or("No token found")?;
-    let client = reqwest::Client::new();
+    let token = get_token().await.ok_or("Not authenticated")?;
 
-    let res = client
+    let client = reqwest::Client::new();
+    let response = client
         .delete(format!("{}/applications/{}", API_BASE_URL, id))
         .header(AUTHORIZATION, format!("Bearer {}", token))
         .send()
         .await
         .map_err(|e| e.to_string())?;
 
-    if res.status().is_success() {
+    if response.status().is_success() {
         Ok(())
     } else {
-        Err(format!("Request failed: {}", res.status()))
+        Err(format!("Failed to delete: {}", response.status()))
+    }
+}
+
+pub async fn fetch_company_intel(
+    url: &str,
+) -> Result<crate::models::application::CompanyIntel, String> {
+    let client = reqwest::Client::new();
+    let response = client
+        .get(format!("{}/intel", API_BASE_URL))
+        .query(&[("url", url)])
+        .send()
+        .await
+        .map_err(|e| e.to_string())?;
+
+    if response.status().is_success() {
+        response
+            .json::<crate::models::application::CompanyIntel>()
+            .await
+            .map_err(|e| e.to_string())
+    } else {
+        Err(format!("Failed to fetch intel: {}", response.status()))
     }
 }
 

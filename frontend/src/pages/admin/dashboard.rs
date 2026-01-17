@@ -47,36 +47,42 @@ pub fn AdminDashboard() -> Element {
     let recent_activity = if let Some(Ok(apps)) = applications.read().as_ref() {
         if apps.is_empty() {
             rsx! {
-                div { class: "text-cyan-500/50 text-center py-8 font-mono text-sm tracking-widest uppercase",
+                div { class: "text-center py-8 font-mono text-[10px] tracking-widest uppercase opacity-30",
                     "// NO SIGNAL DETECTED"
                 }
             }
         } else {
             rsx! {
-                div { class: "space-y-1",
+                div { class: "space-y-2",
                     for app in apps.iter().take(5) {
                         Link {
                             to: crate::Route::ApplicationDetail { id: app.id.to_string() },
-                            class: "block group flex items-center justify-between p-4 border border-cyan-500/10 bg-cyan-500/5 hover:bg-cyan-500/10 hover:border-cyan-500/30 transition-all duration-300 rounded",
+                            class: "block group flex items-center justify-between p-4 border rounded transition-all duration-300",
+                            style: "background: var(--hover-bg); border-color: var(--glass-border);",
                             div { class: "flex items-center gap-4",
-                                div { class: "w-2 h-2 rounded-full bg-cyan-500 shadow-[0_0_10px_#00f3ff]" }
+                                div { class: "w-1.5 h-1.5 rounded-full animate-pulse", style: "background: var(--accent-color); box-shadow: 0 0 10px var(--accent-glow);" }
                                 div {
-                                    p { class: "text-white font-bold tracking-wide", "{app.company}" }
-                                    p { class: "text-xs text-cyan-500/60 font-mono mt-0.5", "{app.role}" }
+                                    p { class: "font-bold tracking-wide text-sm", style: "color: var(--text-color)", "{app.company}" }
+                                    p { class: "text-[10px] font-mono mt-0.5 opacity-40 uppercase", style: "color: var(--accent-color)", "{app.role}" }
                                 }
                             }
                             div { class: "flex items-center gap-4",
                                 if let Some(count) = app.comment_count {
                                     if count > 0 {
-                                        span { class: "text-xs px-2 py-0.5 rounded bg-purple-500/20 text-purple-300 border border-purple-500/30", "💬 {count}" }
+                                        span {
+                                            class: "text-[8px] px-2 py-0.5 rounded border font-black uppercase tracking-widest",
+                                            style: "background: var(--accent-glow); color: var(--accent-color); border-color: var(--glass-border);",
+                                            "💬 {count}"
+                                        }
                                     }
                                 }
                                 span {
-                                    class: "px-3 py-1 text-[10px] font-bold uppercase tracking-widest border transition-colors",
+                                    class: "px-3 py-1 text-[8px] font-black uppercase tracking-widest border transition-colors rounded",
                                     style: match app.status.as_str() {
-                                        "Offer" => "color: #10b981; border-color: #10b981; background: rgba(16,185,129,0.1);",
-                                        "Rejected" => "color: #ef4444; border-color: #ef4444; background: rgba(239,68,68,0.1);",
-                                        _ => "color: #00f3ff; border-color: #00f3ff; background: rgba(0,243,255,0.05);",
+                                        "Offer" | "Accepted" => "color: white; border-color: var(--status-offer); background: var(--status-offer);",
+                                        "Rejected" => "color: white; border-color: var(--status-rejected); background: var(--status-rejected);",
+                                        "Interviewing" => "color: white; border-color: var(--status-interview); background: var(--status-interview);",
+                                        _ => "color: var(--text-color); border-color: var(--glass-border); background: var(--hover-bg);",
                                     },
                                     "{app.status}"
                                 }
@@ -87,7 +93,7 @@ pub fn AdminDashboard() -> Element {
             }
         }
     } else {
-        rsx! { div { class: "animate-pulse text-cyan-500/50 font-mono text-sm", "INITIALIZING..." } }
+        rsx! { div { class: "animate-pulse font-mono text-[10px] opacity-40 uppercase tracking-widest", "INITIALIZING..." } }
     };
 
     let recent_comments_list = if let Some(Ok(comments)) = comments_resource.read().as_ref() {
@@ -125,79 +131,81 @@ pub fn AdminDashboard() -> Element {
         Some(Ok(s)) => rsx! {
             div { class: "grid grid-cols-1 lg:grid-cols-3 gap-8",
                  // Activity Pulse (2/3)
-                div { class: "lg:col-span-2 bg-black/40 border border-cyan-500/20 p-6",
+                div { class: "lg:col-span-2 glass border p-6 rounded",
+                    style: "border-color: var(--glass-border); background: var(--card-bg);",
                     ActivityPulse { data: s.daily_activity.clone() }
                 }
                 // Status Distribution (1/3)
-                div { class: "bg-black/40 border border-emerald-500/20 p-6 flex flex-col items-center",
-                    h4 { class: "text-[10px] font-bold text-emerald-500 uppercase tracking-[0.2em] mb-4 self-start", "Status Distribution" }
+                div { class: "glass border p-6 flex flex-col items-center rounded",
+                    style: "border-color: var(--glass-border); background: var(--card-bg);",
+                    h4 { class: "text-[10px] font-black uppercase tracking-[0.2em] mb-4 self-start opacity-60",
+                        style: "color: var(--accent-color)",
+                        "Status Distribution"
+                    }
                     StatusDonut { data: s.status_distribution.clone() }
                 }
             }
         },
         _ => {
-            rsx! { div { class: "h-48 flex items-center justify-center text-cyan-500/30 font-mono animate-pulse", "CALIBRATING VISUALS..." } }
+            rsx! { div { class: "h-48 flex items-center justify-center font-mono animate-pulse opacity-20 uppercase tracking-[0.5em] text-xs", "CALIBRATING VISUALS..." } }
         }
     };
 
     rsx! {
         div { class: "max-w-7xl mx-auto space-y-8 pb-12",
             // Header
-            div { class: "flex items-center justify-between",
-                h2 { class: "text-3xl font-bold text-white tracking-widest", "SYSTEM OVERVIEW" }
-                div { class: "flex gap-2",
-                    div { class: "w-3 h-3 rounded-full bg-red-500 animate-pulse" }
-                    span { class: "text-xs font-mono text-red-500/80 tracking-widest", "LIVE FEED" }
+            div { class: "flex items-center justify-between border-b pb-6",
+                style: "border-color: var(--glass-border);",
+                h2 { class: "text-4xl font-black tracking-tighter uppercase",
+                    style: "color: var(--text-color); text-shadow: 0 0 10px var(--accent-glow);",
+                    "SYSTEM OVERVIEW"
+                }
+                div { class: "flex items-center gap-3 px-4 py-2 glass rounded-full",
+                    style: "border-color: var(--glass-border);",
+                    div { class: "w-2 h-2 rounded-full bg-red-500 animate-pulse" }
+                    span { class: "text-[10px] font-mono text-red-500/80 tracking-[0.3em] font-black uppercase", "LIVE_FEED" }
                 }
             }
 
             // Stats Grid
             div { class: "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6",
                 // Total Apps
-                div { class: "relative overflow-hidden bg-black/40 border border-cyan-500/20 p-6 group hover:border-cyan-500/50 transition-colors duration-300",
-                    div { class: "absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity",
-                        span { class: "text-6xl", "📂" }
-                    }
-                    h3 { class: "text-cyan-500/60 text-xs font-bold uppercase tracking-[0.2em] mb-2", "Total Applications" }
-                    p { class: "text-4xl font-bold text-white font-mono", "{total}" }
-                    div { class: "h-1 w-full bg-cyan-500/10 mt-4 overflow-hidden",
-                         div { class: "h-full bg-cyan-500 w-[70%]" } // Fake progress
+                div { class: "relative overflow-hidden noir-card p-6 group",
+                    div { class: "absolute top-4 right-4 text-4xl opacity-10 group-hover:opacity-20 transition-opacity", "📂" }
+                    h3 { class: "text-[10px] font-black uppercase tracking-[0.2em] mb-2 opacity-60", "Total Applications" }
+                    p { class: "text-4xl font-bold font-mono", style: "color: var(--text-color)", "{total}" }
+                    div { class: "h-1 w-full bg-white/5 mt-6 overflow-hidden rounded-full",
+                         div { class: "h-full bg-accent-color", style: "width: 70%; box-shadow: 0 0 10px var(--accent-glow);" }
                     }
                 }
 
                 // Success Rate
-                div { class: "relative overflow-hidden bg-black/40 border border-emerald-500/20 p-6 group hover:border-emerald-500/50 transition-colors duration-300",
-                    div { class: "absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity",
-                        span { class: "text-6xl", "🚀" }
-                    }
-                    h3 { class: "text-emerald-500/60 text-xs font-bold uppercase tracking-[0.2em] mb-2", "Success Rate" }
-                    p { class: "text-4xl font-bold text-white font-mono", "{success_rate}%" }
-                     div { class: "h-1 w-full bg-emerald-500/10 mt-4 overflow-hidden",
-                         div { class: "h-full bg-emerald-500", style: "width: {success_rate}%" }
+                div { class: "relative overflow-hidden noir-card p-6 group",
+                    div { class: "absolute top-4 right-4 text-4xl opacity-10 group-hover:opacity-20 transition-opacity", "🚀" }
+                    h3 { class: "text-[10px] font-black uppercase tracking-[0.2em] mb-2", style: "color: var(--status-offer)", "Success Rate" }
+                    p { class: "text-4xl font-bold font-mono", style: "color: var(--status-offer)", "{success_rate}%" }
+                     div { class: "h-1 w-full bg-white/5 mt-6 overflow-hidden rounded-full",
+                         div { class: "h-full", style: "width: {success_rate}%; background: var(--status-offer); box-shadow: 0 0 10px var(--status-offer);" }
                     }
                 }
 
                  // Active Threads
-                div { class: "relative overflow-hidden bg-black/40 border border-blue-500/20 p-6 group hover:border-blue-500/50 transition-colors duration-300",
-                    div { class: "absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity",
-                         span { class: "text-6xl", "⚡" }
-                    }
-                    h3 { class: "text-blue-500/60 text-xs font-bold uppercase tracking-[0.2em] mb-2", "Active Threads" }
-                    p { class: "text-4xl font-bold text-white font-mono", "{active}" }
-                     div { class: "h-1 w-full bg-blue-500/10 mt-4 overflow-hidden",
-                         div { class: "h-full bg-blue-500 w-1/2 animate-pulse" }
+                div { class: "relative overflow-hidden noir-card p-6 group",
+                    div { class: "absolute top-4 right-4 text-4xl opacity-10 group-hover:opacity-20 transition-opacity", "⚡" }
+                    h3 { class: "text-[10px] font-black uppercase tracking-[0.2em] mb-2", style: "color: var(--status-interview)", "Active Threads" }
+                    p { class: "text-4xl font-bold font-mono", style: "color: var(--status-interview)", "{active}" }
+                     div { class: "h-1 w-full bg-white/5 mt-6 overflow-hidden rounded-full",
+                         div { class: "h-full animate-pulse", style: "width: 50%; background: var(--status-interview); box-shadow: 0 0 10px var(--status-interview);" }
                     }
                 }
 
                 // Total Comments
-                div { class: "relative overflow-hidden bg-black/40 border border-purple-500/20 p-6 group hover:border-purple-500/50 transition-colors duration-300",
-                    div { class: "absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity",
-                         span { class: "text-6xl", "💬" }
-                    }
-                    h3 { class: "text-purple-500/60 text-xs font-bold uppercase tracking-[0.2em] mb-2", "Comms Intercepted" }
-                    p { class: "text-4xl font-bold text-white font-mono", "{total_comments}" }
-                     div { class: "h-1 w-full bg-purple-500/10 mt-4 overflow-hidden",
-                         div { class: "h-full bg-purple-500 w-full animate-pulse" }
+                div { class: "relative overflow-hidden noir-card p-6 group",
+                    div { class: "absolute top-4 right-4 text-4xl opacity-10 group-hover:opacity-20 transition-opacity", "💬" }
+                    h3 { class: "text-[10px] font-black uppercase tracking-[0.2em] mb-2 opacity-60", "Comms Intercepted" }
+                    p { class: "text-4xl font-bold font-mono", style: "color: var(--text-color)", "{total_comments}" }
+                     div { class: "h-1 w-full bg-white/5 mt-6 overflow-hidden rounded-full",
+                         div { class: "h-full animate-pulse", style: "width: 100%; background: var(--accent-color); box-shadow: 0 0 10px var(--accent-glow);" }
                     }
                 }
             }
@@ -208,34 +216,40 @@ pub fn AdminDashboard() -> Element {
             // Split View: Activity & Comms
             div { class: "grid grid-cols-1 lg:grid-cols-3 gap-8",
                  // Recent Activity (2/3)
-                div { class: "lg:col-span-2 bg-black/40 border border-white/10 overflow-hidden h-fit",
-                    div { class: "px-6 py-4 border-b border-white/10 flex justify-between items-center bg-white/5",
+                div { class: "lg:col-span-2 glass border overflow-hidden h-fit rounded",
+                    style: "border-color: var(--glass-border); background: var(--card-bg);",
+                    div { class: "px-6 py-4 border-b flex justify-between items-center bg-white/5",
+                        style: "border-color: var(--glass-border);",
                         div { class: "flex items-center gap-3",
                             span { class: "text-xl", "📡" }
-                            h3 { class: "text-sm font-bold text-white uppercase tracking-widest", "Recent Activity Log" }
+                            h3 { class: "text-[10px] font-black uppercase tracking-[0.2em] opacity-80", style: "color: var(--text-color)", "Recent Activity Log" }
                         }
-                        div { class: "text-xs font-mono text-gray-500", "SYNCED" }
+                        div { class: "text-[8px] font-mono opacity-40 uppercase tracking-widest", "SYNCED" }
                     }
                     div { class: "p-6",
                          {recent_activity}
                     }
-                    div { class: "px-6 py-3 border-t border-white/10 bg-white/5 text-right",
+                    div { class: "px-6 py-4 border-t bg-white/5 text-right",
+                        style: "border-color: var(--glass-border);",
                          Link {
                             to: "/admin/applications",
-                            class: "text-xs font-bold text-cyan-500 hover:text-cyan-400 uppercase tracking-widest transition-colors",
+                            class: "text-[10px] font-black uppercase tracking-[0.2em] transition-colors",
+                            style: "color: var(--accent-color)",
                             "VIEW ALL DATA >>"
                         }
                     }
                 }
 
                 // Recent Comments (1/3)
-                div { class: "bg-black/40 border border-purple-500/20 overflow-hidden h-fit",
-                     div { class: "px-6 py-4 border-b border-purple-500/20 flex justify-between items-center bg-purple-500/5",
+                div { class: "glass border overflow-hidden h-fit rounded",
+                    style: "border-color: var(--glass-border); background: var(--card-bg);",
+                     div { class: "px-6 py-4 border-b flex justify-between items-center bg-white/5",
+                        style: "border-color: var(--glass-border);",
                         div { class: "flex items-center gap-3",
                             span { class: "text-xl", "📨" }
-                            h3 { class: "text-sm font-bold text-white uppercase tracking-widest", "Incoming Data" }
+                            h3 { class: "text-[10px] font-black uppercase tracking-[0.2em] opacity-80", style: "color: var(--text-color)", "Incoming Data" }
                         }
-                        div { class: "w-2 h-2 rounded-full bg-purple-500 animate-pulse" }
+                        div { class: "w-1.5 h-1.5 rounded-full animate-pulse", style: "background: var(--accent-color); box-shadow: 0 0 10px var(--accent-glow);" }
                     }
                     div { class: "p-4 max-h-[600px] overflow-y-auto custom-scrollbar",
                          {recent_comments_list}

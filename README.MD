@@ -12,17 +12,20 @@
 
 ### 1. Central Command Dashboard
 - **Mission Statistics**: Real-time calculation of *Active Ops*, *Success Factor*, and *Sector Depth* from live database queries.
-- **Tactical Kanban Board**: Drag-and-drop interface for managing mission stages (Applied, Interviewing, Offer, etc.).
-- **Activity Pulse**: Visual tracking of application frequency and status distribution.
+- **Tri-Mode OS (Theming)**: Seamless switching between **Tactical Noir** (Dark), **Pristine Light** (Light), and **Bamboo Zen** (Organic) aesthetics with persistent memory.
+- **Daily Signal Intercepts**: Real-time visitor tracking and analytics displayed on the main console.
 
-### 2. Intelligence Dossiers (Public Interface)
-- **Sector Analysis**: Public-facing landing page showing current "Mission Logs" to the world.
-- **Dossier Detail**: High-fidelity view of specific applications including company intel and job designations.
-- **Comms Channel (SSE)**: Real-time guest commenting system powered by Server-Sent Events (SSE) for instant signal interception.
+### 2. Scalable Mission Log (Public Interface)
+- **High-Performance Search**: Instant client-side search across company names and roles.
+- **Status Filter Arrays**: Real-time filtering by application state (Applied, Interviewing, Offer, etc.).
+- **Progressive Reveal**: "Reveal More Logs" pagination system designed for 500+ application scale.
+- **Comms Channel (SSE)**: Real-time guest commenting system powered by Server-Sent Events for instant feedback.
 
-### 3. Automated Intel Scraper
-- **Neural Link**: Automatically extracts company logos and descriptions from provided URLs to populate dossiers instantly.
-- **Encryption Phase**: Secure JWT-based authentication for the Command Center.
+### 3. Overhauled Admin Suite
+- **Mission Control**: Fully restyled admin dashboard featuring glassmorphism and indigo accents.
+- **Tactical Kanban Board**: Premium board view for managing application states with hover-glow dossiers.
+- **Intelligence Input**: Streamlined "SCAN WEB" utility that automatically extracts company data from URLs.
+- **Document Depot**: Secure multi-part upload system for CVs and cover letters.
 
 ## 🚀 Future Reconnaissance (Roadmap 2.0)
 

@@ -306,3 +306,20 @@ pub async fn get_dashboard_stats() -> Result<crate::models::application::Dashboa
         Err(format!("Request failed: {}", res.status()))
     }
 }
+
+pub async fn record_visit() -> Result<crate::models::visitor::VisitResponse, String> {
+    let client = reqwest::Client::new();
+    let res = client
+        .post(format!("{}/visit", API_BASE_URL))
+        .send()
+        .await
+        .map_err(|e| e.to_string())?;
+
+    if res.status().is_success() {
+        res.json::<crate::models::visitor::VisitResponse>()
+            .await
+            .map_err(|e| e.to_string())
+    } else {
+        Err(format!("Request failed: {}", res.status()))
+    }
+}

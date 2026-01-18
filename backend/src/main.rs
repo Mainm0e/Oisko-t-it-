@@ -65,6 +65,8 @@ async fn main() {
     let (tx, _rx) = broadcast::channel(100);
     let state = AppState { pool, tx };
 
+    let _ = env::var("JWT_SECRET").expect("JWT_SECRET must be set for signal encryption");
+
     let app = Router::new()
         .route("/api/auth/login", post(routes::auth::login))
         .route("/api/auth/register", post(routes::auth::register))
@@ -106,7 +108,20 @@ async fn main() {
         .route("/api/upload", post(routes::upload::upload_file))
         .nest_service("/uploads", ServeDir::new("uploads"))
         .layer(TraceLayer::new_for_http())
-        .layer(CorsLayer::permissive())
+        .layer(
+            CorsLayer::new()
+                .allow_origin(tower_http::cors::Any) // Replace with specific domains in production
+                .allow_methods([
+                    axum::http::Method::GET,
+                    axum::http::Method::POST,
+                    axum::http::Method::PUT,
+                    axum::http::Method::DELETE,
+                ])
+                .allow_headers([
+                    axum::http::header::AUTHORIZATION,
+                    axum::http::header::CONTENT_TYPE,
+                ]),
+        )
         .with_state(state);
 
     let addr = SocketAddr::from(([0, 0, 0, 0], 3000));

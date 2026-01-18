@@ -34,13 +34,65 @@ pub struct LoginResponse {
 
 #[derive(Serialize)]
 pub struct ErrorResponse {
-    error: String,
+    pub error: String,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Claims {
     pub sub: String, // user id
     pub exp: usize,
+}
+
+#[axum::async_trait]
+impl<S> axum::extract::FromRequestParts<S> for Claims
+where
+    S: Send + Sync,
+{
+    type Rejection = (StatusCode, Json<ErrorResponse>);
+
+    async fn from_request_parts(
+        parts: &mut axum::http::request::Parts,
+        _state: &S,
+    ) -> Result<Self, Self::Rejection> {
+        let auth_header = parts
+            .headers
+            .get(axum::http::header::AUTHORIZATION)
+            .and_then(|h| h.to_str().ok())
+            .ok_or((
+                StatusCode::UNAUTHORIZED,
+                Json(ErrorResponse {
+                    error: "Missing authorization header".to_string(),
+                }),
+            ))?;
+
+        if !auth_header.starts_with("Bearer ") {
+            return Err((
+                StatusCode::UNAUTHORIZED,
+                Json(ErrorResponse {
+                    error: "Invalid authorization header".to_string(),
+                }),
+            ));
+        }
+
+        let token = &auth_header[7..];
+        let secret = env::var("JWT_SECRET").unwrap_or_else(|_| "secret".to_string());
+
+        let token_data = jsonwebtoken::decode::<Claims>(
+            token,
+            &jsonwebtoken::DecodingKey::from_secret(secret.as_bytes()),
+            &jsonwebtoken::Validation::default(),
+        )
+        .map_err(|_| {
+            (
+                StatusCode::UNAUTHORIZED,
+                Json(ErrorResponse {
+                    error: "Invalid token".to_string(),
+                }),
+            )
+        })?;
+
+        Ok(token_data.claims)
+    }
 }
 
 pub async fn login(

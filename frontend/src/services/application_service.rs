@@ -2,8 +2,17 @@ use crate::models::application::{Application, CreateApplicationPayload, UpdateAp
 use dioxus::prelude::*;
 use reqwest::header::{AUTHORIZATION, CONTENT_TYPE};
 
-pub const BASE_URL: &str = "http://127.0.0.1:3000";
-pub const API_BASE_URL: &str = "http://127.0.0.1:3000/api";
+pub const BASE_URL: &str = if let Some(url) = option_env!("API_URL") {
+    url
+} else {
+    "http://127.0.0.1:3000"
+};
+
+pub const API_BASE_URL: &str = if option_env!("API_URL").is_some() {
+    const_format::concatcp!(BASE_URL, "/api")
+} else {
+    "http://127.0.0.1:3000/api"
+};
 
 pub async fn get_token() -> Option<String> {
     dioxus_logger::tracing::info!("DEBUG: get_token called");

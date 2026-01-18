@@ -54,3 +54,19 @@ To achieve maximum dominance in the IT job market, the following strategic updat
 - **Backend**: Axum, SQLx (PostgreSQL), Tokio (SSE/Broadcast), Argon2.
 - **Frontend**: Dioxus 0.7+, Rust-WASM, HTML/CSS/Tailwind.
 - **Infrastructure**: Automated migrations, Secure multi-part file handling.
+
+---
+
+## 🛳 Deployment Prep
+
+To launch the Command Center in a live sector:
+
+1. **Backend**:
+   - Set `DATABASE_URL` in your environment.
+   - Run `cargo run --release`.
+   - Ensure port `3000` is exposed.
+
+2. **Frontend**:
+   - Set `API_URL` environment variable to your backend domain (e.g., `https://api.yourdomain.com`).
+   - Build for production: `dx build --release`.
+   - Deploy the generated `dist` folder to your CDN or web server.

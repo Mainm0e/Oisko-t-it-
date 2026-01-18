@@ -40,7 +40,9 @@ pub fn ApplicationDetail(id: String) -> Element {
             match &*application_resource.read() {
                 Some(Ok(app)) => {
                     let date_str = app.created_at.format(DATE_FMT).to_string();
+                    let page_title = format!("{} | Dossier", app.company);
                     rsx! {
+                        document::Title { "{page_title}" }
                         div { class: "grid grid-cols-1 lg:grid-cols-3 gap-12",
                             // Left Column - Core Intel
                             div { class: "lg:col-span-2 space-y-12",

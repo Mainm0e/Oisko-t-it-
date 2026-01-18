@@ -73,7 +73,11 @@ fn App() -> Element {
     });
 
     rsx! {
-        document::Title { "Oisko töitä" }
+        document::Title { "Oisko töitä | Job Hunt Command Center" }
+        document::Meta { name: "description", content: "Futuristic job application mission control. Track your career operations with tactical precision." }
+        document::Meta { property: "og:title", content: "Oisko töitä | Command Center" }
+        document::Meta { property: "og:description", content: "High-performance job application tracking with real-time signal monitoring." }
+        document::Meta { property: "og:type", content: "website" }
         document::Link { rel: "icon", href: FAVICON }
         document::Link { rel: "stylesheet", href: "https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Quicksand:wght@300;400;500;600;700&family=Rajdhani:wght@300;400;500;600;700&display=swap" }
         document::Link { rel: "stylesheet", href: MAIN_CSS } document::Link { rel: "stylesheet", href: TAILWIND_CSS }
@@ -311,8 +315,10 @@ fn Home() -> Element {
 
                             if total_filtered == 0 {
                                 rsx! {
-                                    div { class: "text-center py-40 glass rounded border-dashed border-2 border-white/10",
-                                        p { class: "font-mono uppercase tracking-[0.5em] opacity-20 text-xl", "NO LOGS_DETECTED_IN_SECTOR" }
+                                    div { class: "text-center py-40 glass rounded-lg border-2 border-dashed border-[var(--glass-border)] group hover:border-[var(--accent-color)] transition-all duration-500",
+                                        div { class: "mb-6 text-4xl opacity-20 group-hover:opacity-40 transition-opacity", "📡" }
+                                        p { class: "font-mono uppercase tracking-[0.5em] opacity-40 text-sm mb-2", "NO SIGNALS_RECOGNIZED_IN_SECTOR" }
+                                        p { class: "text-[10px] font-mono uppercase tracking-[0.2em] opacity-20", "Initialize a new mission via the Secure Admin Terminal." }
                                     }
                                 }
                             } else {

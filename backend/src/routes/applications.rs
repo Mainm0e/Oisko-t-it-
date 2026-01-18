@@ -12,45 +12,14 @@ use axum::{
     },
 };
 use futures_util::stream::Stream;
-use jsonwebtoken::{DecodingKey, Validation, decode};
 use sqlx::PgPool;
 use std::convert::Infallible;
-use std::env;
 use tokio::sync::broadcast;
 use uuid::Uuid;
 
-// Middleware to extract user_id from JWT
-// For now, simpler to just have a helper function or extract manually in handlers
-// But proper way is an Extractor. Let's do a simple helper for now to avoid boilerplate complexity
-async fn get_user_from_header(headers: &axum::http::HeaderMap) -> Result<Uuid, StatusCode> {
-    let auth_header = headers
-        .get("Authorization")
-        .ok_or(StatusCode::UNAUTHORIZED)?
-        .to_str()
-        .map_err(|_| StatusCode::UNAUTHORIZED)?;
-
-    if !auth_header.starts_with("Bearer ") {
-        return Err(StatusCode::UNAUTHORIZED);
-    }
-
-    let token = &auth_header[7..];
-    let secret = env::var("JWT_SECRET").unwrap_or_else(|_| "secret".to_string());
-
-    let token_data = decode::<Claims>(
-        token,
-        &DecodingKey::from_secret(secret.as_bytes()),
-        &Validation::default(),
-    )
-    .map_err(|_| StatusCode::UNAUTHORIZED)?;
-
-    Uuid::parse_str(&token_data.claims.sub).map_err(|_| StatusCode::UNAUTHORIZED)
-}
-
-pub async fn list_applications(
-    State(pool): State<PgPool>,
-    headers: axum::http::HeaderMap,
-) -> impl IntoResponse {
-    let user_id = match get_user_from_header(&headers).await {
+pub async fn list_applications(State(pool): State<PgPool>, claims: Claims) -> impl IntoResponse {
+    let user_id = Uuid::parse_str(&claims.sub).map_err(|_| StatusCode::UNAUTHORIZED);
+    let user_id = match user_id {
         Ok(id) => id,
         Err(e) => return e.into_response(),
     };
@@ -71,10 +40,11 @@ pub async fn list_applications(
 
 pub async fn create_application(
     State(pool): State<PgPool>,
-    headers: axum::http::HeaderMap,
+    claims: Claims,
     Json(payload): Json<CreateApplication>,
 ) -> impl IntoResponse {
-    let user_id = match get_user_from_header(&headers).await {
+    let user_id = Uuid::parse_str(&claims.sub).map_err(|_| StatusCode::UNAUTHORIZED);
+    let user_id = match user_id {
         Ok(id) => id,
         Err(e) => return e.into_response(),
     };
@@ -117,9 +87,10 @@ pub async fn create_application(
 pub async fn get_application(
     State(pool): State<PgPool>,
     Path(id): Path<Uuid>,
-    headers: axum::http::HeaderMap,
+    claims: Claims,
 ) -> impl IntoResponse {
-    let user_id = match get_user_from_header(&headers).await {
+    let user_id = Uuid::parse_str(&claims.sub).map_err(|_| StatusCode::UNAUTHORIZED);
+    let user_id = match user_id {
         Ok(uid) => uid,
         Err(e) => return e.into_response(),
     };
@@ -143,10 +114,11 @@ pub async fn update_application(
     State(pool): State<PgPool>,
     State(tx): State<broadcast::Sender<AppEvent>>,
     Path(id): Path<Uuid>,
-    headers: axum::http::HeaderMap,
+    claims: Claims,
     Json(payload): Json<UpdateApplication>,
 ) -> impl IntoResponse {
-    let user_id = match get_user_from_header(&headers).await {
+    let user_id = Uuid::parse_str(&claims.sub).map_err(|_| StatusCode::UNAUTHORIZED);
+    let user_id = match user_id {
         Ok(uid) => uid,
         Err(e) => return e.into_response(),
     };
@@ -215,9 +187,10 @@ pub async fn update_application(
 pub async fn delete_application(
     State(pool): State<PgPool>,
     Path(id): Path<Uuid>,
-    headers: axum::http::HeaderMap,
+    claims: Claims,
 ) -> impl IntoResponse {
-    let user_id = match get_user_from_header(&headers).await {
+    let user_id = Uuid::parse_str(&claims.sub).map_err(|_| StatusCode::UNAUTHORIZED);
+    let user_id = match user_id {
         Ok(uid) => uid,
         Err(e) => return e.into_response(),
     };
@@ -374,13 +347,11 @@ pub async fn sse_handler(
     Sse::new(stream).keep_alive(axum::response::sse::KeepAlive::default())
 }
 
-pub async fn get_recent_comments(
-    State(pool): State<PgPool>,
-    headers: axum::http::HeaderMap,
-) -> impl IntoResponse {
+pub async fn get_recent_comments(State(pool): State<PgPool>, claims: Claims) -> impl IntoResponse {
     use crate::models::comment::CommentWithContext;
 
-    let user_id = match get_user_from_header(&headers).await {
+    let user_id = Uuid::parse_str(&claims.sub).map_err(|_| StatusCode::UNAUTHORIZED);
+    let user_id = match user_id {
         Ok(id) => id,
         Err(e) => return e.into_response(),
     };
@@ -408,13 +379,11 @@ pub async fn get_recent_comments(
     }
 }
 
-pub async fn get_dashboard_stats(
-    State(pool): State<PgPool>,
-    headers: axum::http::HeaderMap,
-) -> impl IntoResponse {
+pub async fn get_dashboard_stats(State(pool): State<PgPool>, claims: Claims) -> impl IntoResponse {
     use crate::models::application::{DailyCount, DashboardStats, StatusCount};
 
-    let user_id = match get_user_from_header(&headers).await {
+    let user_id = Uuid::parse_str(&claims.sub).map_err(|_| StatusCode::UNAUTHORIZED);
+    let user_id = match user_id {
         Ok(id) => id,
         Err(e) => return e.into_response(),
     };

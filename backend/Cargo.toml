@@ -19,11 +19,11 @@ jsonwebtoken = "9.2"
 uuid = { version = "1.0", features = ["serde", "v4"] }
 chrono = { version = "0.4", features = ["serde"] }
 tower-http = { version = "0.5", features = ["trace", "cors", "fs"] }
-lettre = "0.11"
+lettre = { version = "0.11", default-features = false, features = ["tokio-rustls-tls", "smtp-transport", "builder"] }
 rand = "0.8"
 sha2 = "0.10"
 tokio-stream = "0.1.18"
 async-stream = "0.3.6"
 futures-util = "0.3.31"
 scraper = "0.25.0"
-reqwest = { version = "0.13.1", features = ["json"] }
+reqwest = { version = "0.12", default-features = false, features = ["json", "rustls-tls"] }

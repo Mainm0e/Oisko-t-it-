@@ -3,15 +3,13 @@ FROM rust:1.81-slim AS builder
 # 1. Install system dependencies
 RUN apt-get update && apt-get install -y pkg-config libssl-dev curl wget unzip
 
-# 2. Download pre-compiled Dioxus CLI (v0.7.2 is the latest stable)
-# This replaces the "cargo install" line
-RUN wget https://github.com/DioxusLabs/dioxus/releases/download/v0.7.2/dx-x86_64-unknown-linux-gnu.tar.gz \
-    && tar -xvf dx-x86_64-unknown-linux-gnu.tar.gz \
-    && mv dx /usr/local/bin/ \
-    && chmod +x /usr/local/bin/dx
+# 2. Install Dioxus CLI via Cargo (ensures glibc compatibility)
+RUN cargo install dioxus-cli --version 0.7.2 --locked
 
 WORKDIR /app
 COPY . .
+ARG API_URL
+ENV API_URL=$API_URL
 # Build the WASM and assets
 RUN dx build --release --platform web
 

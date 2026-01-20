@@ -27,3 +27,4 @@ async-stream = "0.3.6"
 futures-util = "0.3.31"
 scraper = "0.25.0"
 reqwest = { version = "0.12", default-features = false, features = ["json", "rustls-tls"] }
+home = "=0.5.11"

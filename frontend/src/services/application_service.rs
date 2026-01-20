@@ -8,11 +8,7 @@ pub const BASE_URL: &str = if let Some(url) = option_env!("API_URL") {
     "http://127.0.0.1:3000"
 };
 
-pub const API_BASE_URL: &str = if option_env!("API_URL").is_some() {
-    const_format::concatcp!(BASE_URL, "/api")
-} else {
-    "http://127.0.0.1:3000/api"
-};
+pub const API_BASE_URL: &str = const_format::concatcp!(BASE_URL, "/api");
 
 pub async fn get_token() -> Option<String> {
     dioxus_logger::tracing::info!("DEBUG: get_token called");
@@ -43,6 +39,7 @@ pub async fn get_token() -> Option<String> {
 
 pub async fn list_applications() -> Result<Vec<Application>, String> {
     let token = get_token().await.ok_or("No token found")?;
+    dioxus_logger::tracing::info!("FETCHING (SECURE): {}/applications", API_BASE_URL);
     let client = reqwest::Client::new();
 
     let res = client
@@ -189,6 +186,7 @@ pub async fn get_application(id: &str) -> Result<Application, String> {
 
 pub async fn get_public_applications(
 ) -> Result<Vec<crate::models::application::PublicApplication>, String> {
+    dioxus_logger::tracing::info!("FETCHING: {}/public/applications", API_BASE_URL);
     let client = reqwest::Client::new();
 
     let res = client

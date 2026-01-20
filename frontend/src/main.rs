@@ -61,6 +61,10 @@ fn main() {
 fn App() -> Element {
     // Initialize Theme
     use_effect(move || {
+        dioxus_logger::tracing::info!(
+            "SYSTEM START: API_BASE_URL = {}",
+            crate::services::application_service::API_BASE_URL
+        );
         spawn(async move {
             let _ = document::eval(
                 r#"
@@ -80,7 +84,8 @@ fn App() -> Element {
         document::Meta { property: "og:type", content: "website" }
         document::Link { rel: "icon", href: FAVICON }
         document::Link { rel: "stylesheet", href: "https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Quicksand:wght@300;400;500;600;700&family=Rajdhani:wght@300;400;500;600;700&display=swap" }
-        document::Link { rel: "stylesheet", href: MAIN_CSS } document::Link { rel: "stylesheet", href: TAILWIND_CSS }
+        document::Link { rel: "stylesheet", href: MAIN_CSS }
+        document::Link { rel: "stylesheet", href: TAILWIND_CSS }
         Router::<Route> {}
     }
 }

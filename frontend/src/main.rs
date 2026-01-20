@@ -70,9 +70,22 @@ fn App() -> Element {
     rsx! {
         document::Title { "Oisko töitä | Job Hunt Command Center" }
         document::Meta { name: "description", content: "Futuristic job application mission control. Track your career operations with tactical precision." }
+
+        // Open Graph
+        document::Meta { property: "og:site_name", content: "Oisko töitä" }
         document::Meta { property: "og:title", content: "Oisko töitä | Command Center" }
         document::Meta { property: "og:description", content: "High-performance job application tracking with real-time signal monitoring." }
         document::Meta { property: "og:type", content: "website" }
+        document::Meta { property: "og:image", content: asset!("/assets/og-image.png") }
+        document::Meta { property: "og:image:width", content: "1200" }
+        document::Meta { property: "og:image:height", content: "630" }
+
+        // Twitter Card
+        document::Meta { name: "twitter:card", content: "summary_large_image" }
+        document::Meta { name: "twitter:title", content: "Oisko töitä | Command Center" }
+        document::Meta { name: "twitter:description", content: "High-performance job application tracking with real-time signal monitoring." }
+        document::Meta { name: "twitter:image", content: asset!("/assets/og-image.png") }
+
         document::Link { rel: "icon", href: FAVICON }
         document::Link { rel: "stylesheet", href: "https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Quicksand:wght@300;400;500;600;700&family=Rajdhani:wght@300;400;500;600;700&display=swap" }
         document::Link { rel: "stylesheet", href: MAIN_CSS }

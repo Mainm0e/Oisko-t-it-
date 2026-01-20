@@ -1,11 +1,11 @@
 use crate::models::user::User;
 use argon2::{
-    Argon2, PasswordHasher,
     password_hash::{PasswordHash, PasswordVerifier},
+    Argon2, PasswordHasher,
 };
-use axum::{Json, extract::State, http::StatusCode, response::IntoResponse};
-use jsonwebtoken::{EncodingKey, Header, encode};
-use rand::{Rng, distributions::Alphanumeric};
+use axum::{extract::State, http::StatusCode, response::IntoResponse, Json};
+use jsonwebtoken::{encode, EncodingKey, Header};
+use rand::{distributions::Alphanumeric, Rng};
 use serde::{Deserialize, Serialize};
 use sqlx::PgPool;
 use std::env;
@@ -248,12 +248,15 @@ pub async fn register(
     match insert_result {
         Ok(_) => {
             // 5. "Send" Email (Log it for now)
+            let frontend_url =
+                env::var("FRONTEND_URL").unwrap_or_else(|_| "http://localhost:8080".to_string());
             tracing::info!(">>> MOCK EMAIL SENT <<<");
             tracing::info!("To: {}", payload.email);
             tracing::info!("Action: Verify Account");
             tracing::info!("Token: {}", verification_token);
             tracing::info!(
-                "Link: http://localhost:8080/admin/verify?token={}",
+                "Link: {}/admin/verify?token={}",
+                frontend_url,
                 verification_token
             );
             tracing::info!(">>> END EMAIL <<<");

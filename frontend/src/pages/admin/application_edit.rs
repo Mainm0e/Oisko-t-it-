@@ -74,7 +74,27 @@ pub fn ApplicationEdit(id: String) -> Element {
         let files = evt.files();
         if let Some(file) = files.first() {
             let file_name = file.name();
+
+            // Client-side validation
+            let lower_name = file_name.to_lowercase();
+            let valid_extensions = [".pdf", ".docx", ".png", ".jpg", ".jpeg", ".webp"];
+            if !valid_extensions.iter().any(|ext| lower_name.ends_with(ext)) {
+                error_msg.set(format!(
+                    "File type not supported. Please upload: {}",
+                    valid_extensions.join(", ")
+                ));
+                uploading.set(false);
+                return;
+            }
+
             if let Ok(file_bytes) = file.clone().read_bytes().await {
+                // Check size (10MB limit)
+                if file_bytes.len() > 10 * 1024 * 1024 {
+                    error_msg.set("File too large. Max size is 10MB.".to_string());
+                    uploading.set(false);
+                    return;
+                }
+
                 match crate::services::application_service::upload_file(
                     file_bytes.to_vec(),
                     file_name,

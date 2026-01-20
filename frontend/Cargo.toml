@@ -30,4 +30,5 @@ mobile = ["dioxus/mobile"]
 opt-level = 'z'     # Optimize for size
 lto = true          # Link Time Optimization
 codegen-units = 1   # Reduce parallelization for better optimization
-strip = true        # Strip symbols to avoid wasm-opt DWARF errors
+debug = 0           # Explicitly disable debug info to avoid wasm-opt DWARF errors
+# Removed strip = true as it conflicts with Dioxus CLI's internal bundler

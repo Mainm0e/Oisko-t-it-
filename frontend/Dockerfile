@@ -2,14 +2,13 @@
 FROM ubuntu:24.04 AS builder
 
 # 1. Install system dependencies
-# We need curl and wget to install Rust and the Dioxus CLI
-# pkg-config, libssl-dev, and build-essential are needed for original Rust builds
 RUN apt-get update && apt-get install -y \
     curl \
     wget \
     pkg-config \
     libssl-dev \
     build-essential \
+    binutils \
     unzip \
     ca-certificates \
     && rm -rf /var/lib/apt/lists/*
@@ -46,12 +45,11 @@ RUN if [ -f "Cargo.toml" ]; then \
     fi
 
 # Build the WASM and assets
-# We strip symbols in Cargo.toml to avoid wasm-opt issues
-# If wasm-opt fails but files are generated, we continue
-RUN dx build --release --platform web || [ -f "target/dx/frontend/release/web/public/index.html" ]
+# We use debug=0 in Cargo.toml to avoid wasm-opt issues
+RUN dx build --release --platform web
 
-# Create a generic dist folder for simplicity
-RUN cp -r /app/target/dx/frontend/release/web/public /app/dist
+# Ensure artifacts are in /app/dist
+RUN mkdir -p /app/dist && cp -r target/dx/frontend/release/web/public/* /app/dist/
 
 # Serve Stage (Using Nginx)
 FROM nginx:stable-alpine

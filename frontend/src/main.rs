@@ -285,18 +285,19 @@ fn Home() -> Element {
                             }
                             div { class: "flex flex-wrap gap-2",
                                 for status in ["All", "Applied", "Interviewing", "Offer", "Rejected", "Accepted"] {
-                                    button {
-                                        class: "px-4 py-3 text-[10px] font-black uppercase tracking-widest border transition-all",
-                                        style: if status_filter() == status {
-                                            "background: var(--accent-color); color: white; border-color: var(--accent-color);"
-                                        } else {
-                                            "background: var(--hover-bg); color: var(--text-color); border-color: var(--glass-border); opacity: 0.6;"
-                                        },
-                                        onclick: move |_| {
-                                            status_filter.set(status.to_string());
-                                            visible_count.set(12);
-                                        },
-                                        "{status}"
+                                    {
+                                        let is_active = status_filter() == status;
+                                        let btn_class = if is_active { "px-4 py-3 text-[10px] font-black uppercase tracking-widest border transition-all filter-btn active" } else { "px-4 py-3 text-[10px] font-black uppercase tracking-widest border transition-all filter-btn" };
+                                        rsx! {
+                                            button {
+                                                class: "{btn_class}",
+                                                onclick: move |_| {
+                                                    status_filter.set(status.to_string());
+                                                    visible_count.set(12);
+                                                },
+                                                "{status}"
+                                            }
+                                        }
                                     }
                                 }
                             }
@@ -438,25 +439,44 @@ fn Navbar() -> Element {
         });
     });
 
+    let next_theme_info = match theme().as_str() {
+        "dark" => (
+            "light",
+            "LIGHT_MODE",
+            "var(--clr-light-bg)",
+            "var(--clr-light-text)",
+            "var(--clr-light-accent)",
+        ),
+        "light" => (
+            "zen",
+            "ZEN_MODE",
+            "var(--clr-zen-bg)",
+            "var(--clr-zen-text)",
+            "var(--clr-zen-accent)",
+        ),
+        _ => (
+            "dark",
+            "NOIR_MODE",
+            "var(--clr-noir-bg)",
+            "var(--clr-noir-text)",
+            "var(--clr-noir-accent)",
+        ),
+    };
+
     rsx! {
         div {
-            class: "fixed top-0 left-0 w-full z-50 flex justify-between items-center p-6 mix-blend-difference",
-            style: "color: white;", // Always white because of mix-blend-difference
+            class: "fixed top-0 left-0 w-full z-50 flex justify-between items-center p-6 pointer-events-none",
 
-            nav { class: "flex gap-6" }
+            div { class: "mix-blend-difference pointer-events-auto",
+                style: "color: white;",
+                nav { class: "flex gap-6" }
+            }
 
             button {
-                class: "px-4 py-1 rounded border border-white hover:bg-white hover:text-black transition-colors cursor-pointer font-bold tracking-widest text-xs uppercase",
+                class: "theme-toggle border pointer-events-auto",
+                style: "background: {next_theme_info.2}; color: {next_theme_info.3}; border-color: {next_theme_info.4};",
                 onclick: move |_| {
-                    let current = theme();
-                    let new_theme = if current == "dark" {
-                        "light"
-                    } else if current == "light" {
-                        "zen"
-                    } else {
-                        "dark"
-                    };
-
+                    let new_theme = next_theme_info.0;
                     theme.set(new_theme.to_string());
                     spawn(async move {
                         let _ = document::eval(&format!(r#"
@@ -465,11 +485,7 @@ fn Navbar() -> Element {
                         "#, new_theme, new_theme)).await;
                     });
                 },
-                match theme().as_str() {
-                    "dark" => "LIGHT_MODE",
-                    "light" => "ZEN_MODE",
-                    _ => "NOIR_MODE",
-                }
+                "{next_theme_info.1}"
             }
         }
 

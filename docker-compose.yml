@@ -8,9 +8,31 @@ services:
       POSTGRES_PASSWORD: password
       POSTGRES_DB: oisko_db
     ports:
-      - "5433:5432"
+      - "5433:5432" # Allows you to connect from your computer on 5433
     volumes:
       - postgres_data:/var/lib/postgresql/data
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    environment:
+      - DATABASE_URL=postgres://admin:password@db:5432/oisko_db
+    ports:
+      - "3000:3000"
+    depends_on:
+      - db
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "8080:80"
+    depends_on:
+      - backend
+    environment:
+      - BACKEND_URL=http://localhost:3000
 
 volumes:
   postgres_data:

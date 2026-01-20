@@ -59,20 +59,11 @@ fn main() {
 
 #[component]
 fn App() -> Element {
-    // Initialize Theme
+    // Initialize Theme (Force Dark)
     use_effect(move || {
-        dioxus_logger::tracing::info!(
-            "SYSTEM START: API_BASE_URL = {}",
-            crate::services::application_service::API_BASE_URL
-        );
         spawn(async move {
-            let _ = document::eval(
-                r#"
-                const theme = localStorage.getItem('theme') || 'dark';
-                document.documentElement.setAttribute('data-theme', theme);
-            "#,
-            )
-            .await;
+            let _ = document::eval("document.documentElement.setAttribute('data-theme', 'dark');")
+                .await;
         });
     });
 
@@ -430,44 +421,6 @@ pub fn Blog(id: i32) -> Element {
 /// Shared navbar component.
 #[component]
 fn Navbar() -> Element {
-    let mut theme = use_signal(|| "dark".to_string());
-
-    // Sync theme on mount
-    use_effect(move || {
-        spawn(async move {
-            if let Ok(val) = document::eval("return localStorage.getItem('theme') || 'dark'")
-                .recv::<String>()
-                .await
-            {
-                theme.set(val);
-            }
-        });
-    });
-
-    let next_theme_info = match theme().as_str() {
-        "dark" => (
-            "light",
-            "LIGHT_MODE",
-            "var(--clr-light-bg)",
-            "var(--clr-light-text)",
-            "var(--clr-light-accent)",
-        ),
-        "light" => (
-            "zen",
-            "ZEN_MODE",
-            "var(--clr-zen-bg)",
-            "var(--clr-zen-text)",
-            "var(--clr-zen-accent)",
-        ),
-        _ => (
-            "dark",
-            "NOIR_MODE",
-            "var(--clr-noir-bg)",
-            "var(--clr-noir-text)",
-            "var(--clr-noir-accent)",
-        ),
-    };
-
     rsx! {
         div {
             class: "fixed top-0 left-0 w-full z-50 flex justify-between items-center p-6 pointer-events-none",
@@ -475,22 +428,6 @@ fn Navbar() -> Element {
             div { class: "mix-blend-difference pointer-events-auto",
                 style: "color: white;",
                 nav { class: "flex gap-6" }
-            }
-
-            button {
-                class: "theme-toggle border pointer-events-auto",
-                style: "background: {next_theme_info.2}; color: {next_theme_info.3}; border-color: {next_theme_info.4};",
-                onclick: move |_| {
-                    let new_theme = next_theme_info.0;
-                    theme.set(new_theme.to_string());
-                    spawn(async move {
-                        let _ = document::eval(&format!(r#"
-                            document.documentElement.setAttribute('data-theme', '{}');
-                            localStorage.setItem('theme', '{}');
-                        "#, new_theme, new_theme)).await;
-                    });
-                },
-                "{next_theme_info.1}"
             }
         }
 

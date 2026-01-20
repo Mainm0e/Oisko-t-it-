@@ -84,10 +84,31 @@ pub fn ApplicationCreate() -> Element {
 
     let upload_handler = move |evt: Event<FormData>, target: &'static str| async move {
         uploading.set(true);
+        error_msg.set("".to_string()); // Clear previous errors
         let files = evt.files();
         if let Some(file) = files.first() {
             let file_name = file.name();
+
+            // Client-side validation
+            let lower_name = file_name.to_lowercase();
+            let valid_extensions = [".pdf", ".docx", ".png", ".jpg", ".jpeg", ".webp"];
+            if !valid_extensions.iter().any(|ext| lower_name.ends_with(ext)) {
+                error_msg.set(format!(
+                    "File type not supported. Please upload: {}",
+                    valid_extensions.join(", ")
+                ));
+                uploading.set(false);
+                return;
+            }
+
             if let Ok(file_bytes) = file.clone().read_bytes().await {
+                // Check size (10MB limit)
+                if file_bytes.len() > 10 * 1024 * 1024 {
+                    error_msg.set("File too large. Max size is 10MB.".to_string());
+                    uploading.set(false);
+                    return;
+                }
+
                 match crate::services::application_service::upload_file(
                     file_bytes.to_vec(),
                     file_name,
@@ -309,6 +330,7 @@ pub fn ApplicationCreate() -> Element {
                                         }
                                         input {
                                             r#type: "file",
+                                            accept: ".pdf,.docx,.png,.jpg,.jpeg,.webp",
                                             class: "w-full text-[10px] font-mono opacity-60 file:mr-4 file:py-2 file:px-4 file:rounded file:border file:text-[10px] file:font-black file:uppercase file:tracking-widest file:bg-[var(--hover-bg)] file:text-[var(--accent-color)] file:border-[var(--glass-border)] hover:file:bg-[var(--accent-glow)] transition-all",
                                             onchange: move |e| upload_handler(e, "cv")
                                         }
@@ -326,6 +348,7 @@ pub fn ApplicationCreate() -> Element {
                                     }
                                     input {
                                         r#type: "file",
+                                        accept: ".pdf,.docx,.png,.jpg,.jpeg,.webp",
                                         class: "w-full text-[10px] font-mono opacity-60 file:mr-4 file:py-2 file:px-4 file:rounded file:border file:text-[10px] file:font-black file:uppercase file:tracking-widest file:bg-[var(--hover-bg)] file:text-[var(--accent-color)] file:border-[var(--glass-border)] hover:file:bg-[var(--accent-glow)] transition-all",
                                         onchange: move |e| upload_handler(e, "cover_letter")
                                     }

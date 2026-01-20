@@ -25,13 +25,13 @@ pub fn ApplicationDetail(id: String) -> Element {
     rsx! {
         div { class: "max-w-7xl mx-auto px-4 py-20 min-h-screen scanline",
             // Back Button & Navigation context
-            div { class: "flex justify-between items-center mb-12",
+            div { class: "flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8 md:mb-12",
                 Link {
                     to: crate::Route::Home {},
-                    class: "noir-btn flex items-center gap-2 text-xs",
+                    class: "noir-btn flex items-center gap-2 text-xs w-full md:w-auto justify-center md:justify-start",
                     "← RTN_TO_LOG"
                 }
-                div { class: "flex items-center gap-2 text-[10px] tracking-widest font-mono opacity-40",
+                div { class: "flex items-center gap-2 text-[10px] tracking-widest font-mono opacity-40 self-end md:self-auto",
                     "DOSSIER_ID:"
                     span { class: "text-accent-color", "{id}" }
                 }
@@ -43,23 +43,23 @@ pub fn ApplicationDetail(id: String) -> Element {
                     let page_title = format!("{} | Dossier", app.company);
                     rsx! {
                         document::Title { "{page_title}" }
-                        div { class: "grid grid-cols-1 lg:grid-cols-3 gap-12",
+                        div { class: "grid grid-cols-1 lg:grid-cols-3 gap-8 md:gap-12",
                             // Left Column - Core Intel
-                            div { class: "lg:col-span-2 space-y-12",
+                            div { class: "lg:col-span-2 space-y-8 md:space-y-12",
                                 // Primary Briefing
-                                div { class: "glass p-10 rounded-sm relative overflow-hidden",
+                                div { class: "glass p-6 md:p-10 rounded-sm relative overflow-hidden",
                                     div { class: "absolute top-0 right-0 w-32 h-32 bg-accent-glow blur-[100px] opacity-10 pointer-events-none" }
 
-                                    div { class: "flex flex-col md:flex-row justify-between items-start gap-8 mb-12",
-                                        div { class: "flex items-start gap-6",
+                                    div { class: "flex flex-col md:flex-row justify-between items-start gap-6 md:gap-8 mb-8 md:mb-12",
+                                        div { class: "flex flex-col md:flex-row items-start gap-6 w-full",
                                             if let Some(logo) = &app.logo_url {
                                                 img {
                                                     src: "{logo}",
-                                                    class: "w-24 h-24 rounded-lg bg-white/5 object-contain border border-white/10 p-2 shadow-2xl",
+                                                    class: "w-16 h-16 md:w-24 md:h-24 rounded-lg bg-white/5 object-contain border border-white/10 p-2 shadow-2xl",
                                                 }
                                             }
                                             div {
-                                                h1 { class: "text-5xl md:text-7xl font-black mb-2 tracking-tighter", "{app.company}" }
+                                                h1 { class: "text-2xl md:text-5xl font-black mb-2 tracking-tighter break-words", "{app.company}" }
                                                 if let Some(website) = &app.company_website {
                                                     a {
                                                         href: "{website}",

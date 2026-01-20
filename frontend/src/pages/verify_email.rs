@@ -7,11 +7,6 @@ struct VerifyPayload {
 }
 
 #[derive(Deserialize)]
-struct VerifyResponse {
-    message: String,
-}
-
-#[derive(Deserialize)]
 struct ErrorResponse {
     error: String,
 }

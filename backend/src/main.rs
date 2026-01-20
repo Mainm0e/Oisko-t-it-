@@ -67,6 +67,8 @@ async fn main() {
 
     let _ = env::var("JWT_SECRET").expect("JWT_SECRET must be set for signal encryption");
 
+    use axum::extract::DefaultBodyLimit;
+
     let app = Router::new()
         .route("/api/auth/login", post(routes::auth::login))
         .route("/api/auth/register", post(routes::auth::register))
@@ -108,6 +110,7 @@ async fn main() {
         .route("/api/upload", post(routes::upload::upload_file))
         .nest_service("/uploads", ServeDir::new("uploads"))
         .layer(TraceLayer::new_for_http())
+        .layer(DefaultBodyLimit::max(10 * 1024 * 1024)) // Increase limit to 10MB
         .layer(
             CorsLayer::new()
                 .allow_origin(tower_http::cors::Any) // Replace with specific domains in production

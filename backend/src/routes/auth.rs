@@ -250,16 +250,70 @@ pub async fn register(
             // 5. "Send" Email (Log it for now)
             let frontend_url =
                 env::var("FRONTEND_URL").unwrap_or_else(|_| "http://localhost:8080".to_string());
-            tracing::info!(">>> MOCK EMAIL SENT <<<");
+            let verify_link = format!("{}/admin/verify?token={}", frontend_url, verification_token);
+
+            tracing::info!(">>> ACCOUNT CREATED <<<");
             tracing::info!("To: {}", payload.email);
-            tracing::info!("Action: Verify Account");
-            tracing::info!("Token: {}", verification_token);
-            tracing::info!(
-                "Link: {}/admin/verify?token={}",
-                frontend_url,
-                verification_token
-            );
-            tracing::info!(">>> END EMAIL <<<");
+            tracing::info!("Link: {}", verify_link);
+
+            // Send Email via Resend if API key is present and not the placeholder
+            if let Ok(api_key) = env::var("RESEND_API_KEY") {
+                if api_key != "re_123456789" {
+                    let sender = env::var("SENDER_EMAIL")
+                        .unwrap_or_else(|_| "onboarding@resend.dev".to_string());
+                    let client = reqwest::Client::new();
+
+                    let email_body = format!(
+                        r#"
+                        <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto;">
+                            <h2>Welcome to Oisko töitä</h2>
+                            <p>You have been registered as an administrator.</p>
+                            <p>Please click the button below to verify your account:</p>
+                            <a href="{}" style="display: inline-block; background-color: #000; color: #fff; padding: 10px 20px; text-decoration: none; border-radius: 5px; font-weight: bold;">Verify Account</a>
+                            <p style="margin-top: 20px; font-size: 12px; color: #666;">Or copy this link: {}</p>
+                        </div>
+                        "#,
+                        verify_link, verify_link
+                    );
+
+                    let resend_payload = serde_json::json!({
+                        "from": sender,
+                        "to": payload.email,
+                        "subject": "Verify your Oisko töitä Admin Account",
+                        "html": email_body
+                    });
+
+                    // Spawn the email task so we don't block the response
+                    tokio::spawn(async move {
+                        match client
+                            .post("https://api.resend.com/emails")
+                            .header("Authorization", format!("Bearer {}", api_key))
+                            .json(&resend_payload)
+                            .send()
+                            .await
+                        {
+                            Ok(res) => {
+                                if res.status().is_success() {
+                                    tracing::info!("Email sent successfully to {}", payload.email);
+                                } else {
+                                    let status = res.status();
+                                    let text = res.text().await.unwrap_or_default();
+                                    tracing::error!(
+                                        "Failed to send email via Resend. Status: {}, Body: {}",
+                                        status,
+                                        text
+                                    );
+                                }
+                            }
+                            Err(e) => tracing::error!("Failed to execute Resend request: {}", e),
+                        }
+                    });
+                } else {
+                    tracing::warn!("Resend API key is set to placeholder. Email sending skipped.");
+                }
+            } else {
+                tracing::warn!("RESEND_API_KEY not set. Email not sent.");
+            }
 
             (StatusCode::CREATED, Json(serde_json::json!({ "message": "Changes saved. Check backend logs for token." }))).into_response()
         }

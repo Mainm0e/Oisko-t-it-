@@ -15,35 +15,26 @@ pub const BASE_URL: &str = if let Some(url) = option_env!("API_URL") {
 pub const API_BASE_URL: &str = const_format::concatcp!(BASE_URL, "/api");
 
 pub async fn get_token() -> Option<String> {
-    dioxus_logger::tracing::info!("DEBUG: get_token called");
     let mut eval = document::eval(
         "
-        console.log('JS: getting token');
         let token = localStorage.getItem('admin_token');
-        console.log('JS: sending token', token);
         dioxus.send(token);
     ",
     );
-    dioxus_logger::tracing::info!("DEBUG: eval created, waiting for recv");
 
     match eval.recv::<serde_json::Value>().await {
         Ok(val) => {
-            dioxus_logger::tracing::info!("DEBUG: eval received: {:?}", val);
             if let Some(token) = val.as_str() {
                 return Some(token.to_string());
             }
         }
-        Err(e) => {
-            dioxus_logger::tracing::error!("DEBUG: eval recv error: {}", e);
-        }
+        Err(_) => {}
     }
-    dioxus_logger::tracing::warn!("DEBUG: get_token returning None");
     None
 }
 
 pub async fn list_applications() -> Result<Vec<Application>, String> {
     let token = get_token().await.ok_or("No token found")?;
-    dioxus_logger::tracing::info!("FETCHING (SECURE): {}/applications", API_BASE_URL);
     let client = reqwest::Client::new();
 
     let res = client
@@ -166,7 +157,15 @@ pub async fn upload_file(file_data: Vec<u8>, file_name: String) -> Result<String
         let json: serde_json::Value = res.json().await.map_err(|e| e.to_string())?;
         Ok(json["url"].as_str().unwrap_or("").to_string())
     } else {
-        Err("Upload failed".to_string())
+        let status = res.status();
+        let error_text = res.text().await.unwrap_or_default();
+        // Try to parse as JSON error response
+        if let Ok(json) = serde_json::from_str::<serde_json::Value>(&error_text) {
+            if let Some(msg) = json["error"].as_str() {
+                return Err(msg.to_string());
+            }
+        }
+        Err(format!("Upload failed ({}): {}", status, error_text))
     }
 }
 
@@ -190,7 +189,6 @@ pub async fn get_application(id: &str) -> Result<Application, String> {
 
 pub async fn get_public_applications(
 ) -> Result<Vec<crate::models::application::PublicApplication>, String> {
-    dioxus_logger::tracing::info!("FETCHING: {}/public/applications", API_BASE_URL);
     let client = reqwest::Client::new();
 
     let res = client

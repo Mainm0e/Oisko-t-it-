@@ -25,3 +25,9 @@ default = ["web"]
 web = ["dioxus/web"]
 desktop = ["dioxus/desktop"]
 mobile = ["dioxus/mobile"]
+
+[profile.release]
+opt-level = 'z'     # Optimize for size
+lto = true          # Link Time Optimization
+codegen-units = 1   # Reduce parallelization for better optimization
+strip = true        # Strip symbols to avoid wasm-opt DWARF errors

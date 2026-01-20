@@ -3,7 +3,11 @@ use dioxus::prelude::*;
 use reqwest::header::{AUTHORIZATION, CONTENT_TYPE};
 
 pub const BASE_URL: &str = if let Some(url) = option_env!("API_URL") {
-    url
+    if url.is_empty() {
+        "http://127.0.0.1:3000"
+    } else {
+        url
+    }
 } else {
     "http://127.0.0.1:3000"
 };

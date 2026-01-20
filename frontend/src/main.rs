@@ -14,6 +14,7 @@ use pages::admin::layout::AdminLayout;
 use pages::admin_login::AdminLogin;
 use pages::admin_register::AdminRegister;
 use pages::application_detail::ApplicationDetail;
+use pages::contact::Contact;
 use pages::verify_email::VerifyEmail;
 
 use components::data_counter::DataCounter;
@@ -30,6 +31,8 @@ enum Route {
     ApplicationDetail { id: String },
     #[route("/blog/:id")]
     Blog { id: i32 },
+    #[route("/contact")]
+    Contact {},
     #[end_layout]
     #[route("/admin/login")]
     AdminLogin {},
@@ -193,14 +196,25 @@ fn Home() -> Element {
                         text: "OISKO TÖITÄ".to_string(),
                         speed: 100,
                         decode: true,
-                        class: "glitch-text"
+                        class: "glitch-text text-4xl sm:text-6xl md:text-8xl"
                     }
                 }
-                div { class: "flex items-center gap-4 text-xs tracking-[0.4em] uppercase font-bold opacity-60",
-                    span { class: "w-2 h-2 rounded-full bg-green-500 animate-pulse" }
-                    TerminalText { text: "// NEURAL LINK: STABLE".to_string(), speed: 50, delay: 1000, cursor: false }
-                    span { class: "mx-2 opacity-30", "|" }
-                    "EST: 2026.01.16"
+                div { class: "flex flex-col md:flex-row items-center gap-4 text-xs tracking-[0.2em] md:tracking-[0.4em] uppercase font-bold opacity-60 mt-4",
+                    div { class: "flex items-center gap-2",
+                        span { class: "w-2 h-2 rounded-full bg-green-500 animate-pulse" }
+                        TerminalText { text: "// SYSTEM STATUS: ONLINE".to_string(), speed: 50, delay: 1000, cursor: false }
+                    }
+                    span { class: "hidden md:inline mx-2 opacity-30", "|" }
+                    span { "DATE: {sys_time}" }
+                }
+
+                div { class: "mt-12 group relative inline-block",
+                    Link {
+                        to: Route::Contact {},
+                        class: "px-12 py-6 bg-white text-black font-black uppercase tracking-[0.4em] text-sm hover:scale-[1.02] hover:shadow-[0_0_30px_rgba(255,255,255,0.3)] active:scale-[0.99] transition-all relative overflow-hidden inline-block",
+                        "Offer Protocol // Initiate"
+                        div { class: "absolute inset-0 bg-black/10 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-500 pointer-events-none" }
+                    }
                 }
             }
 
@@ -214,7 +228,7 @@ fn Home() -> Element {
 
                     rsx! {
                         // Stats Bar
-                        div { class: "flex flex-wrap items-center justify-between mb-16 border-y border-white/5 py-8 glass px-8 rounded-xl gap-8 relative overflow-hidden",
+                        div { class: "flex flex-wrap items-center justify-center md:justify-between mb-16 border-y border-white/5 py-8 glass px-8 rounded-xl gap-8 relative overflow-hidden",
                             // Sector Map Decoration
                             div { class: "absolute -right-20 -top-20 w-64 opacity-20 group-hover:opacity-40 transition-opacity",
                                 SectorMap {}
@@ -222,19 +236,19 @@ fn Home() -> Element {
 
                             div { class: "flex flex-wrap gap-8 md:gap-16 relative z-10",
                                 div { class: "flex flex-col gap-1",
-                                    span { class: "text-[10px] uppercase tracking-[0.2em] font-black text-accent-color", "Active Ops" }
+                                    span { class: "text-xs font-black uppercase tracking-[0.2em] text-accent-color", "Active Ops" }
                                     span { class: "text-3xl font-black", DataCounter { value: active_ops as i32 } }
                                 }
                                 div { class: "flex flex-col gap-1",
-                                    span { class: "text-[10px] uppercase tracking-[0.2em] font-black opacity-40", "Total Logs" }
+                                    span { class: "text-xs font-black uppercase tracking-[0.2em] opacity-40", "Total Logs" }
                                     span { class: "text-3xl font-black opacity-80", DataCounter { value: total_nodes as i32 } }
                                 }
                                 div { class: "flex flex-col gap-1",
-                                    span { class: "text-[10px] uppercase tracking-[0.2em] font-black", style: "color: var(--status-offer)", "Success Fact" }
+                                    span { class: "text-xs font-black uppercase tracking-[0.2em]", style: "color: var(--status-offer)", "Success Fact" }
                                     span { class: "text-3xl font-black", style: "color: var(--status-offer)", DataCounter { value: success_rate, suffix: "%".to_string() } }
                                 }
                                 div { class: "flex flex-col gap-1",
-                                    span { class: "text-[10px] uppercase tracking-[0.2em] font-black", style: "color: var(--status-interview)", "Sector Depth" }
+                                    span { class: "text-xs font-black uppercase tracking-[0.2em]", style: "color: var(--status-interview)", "Sector Depth" }
                                     span { class: "text-3xl font-black", style: "color: var(--status-interview)", DataCounter { value: sector_diversity as i32 } }
                                 }
                                 // Visitor Stats
@@ -242,7 +256,7 @@ fn Home() -> Element {
                                     match &*visitor_stats.read() {
                                         Some(Ok(v)) => rsx! {
                                             div { class: "flex flex-col gap-1 pl-8 border-l border-white/10 relative group",
-                                                span { class: "text-[10px] uppercase tracking-[0.2em] font-black animate-pulse", style: "color: var(--accent-color)", "Daily Intercepts" }
+                                                span { class: "text-xs font-black uppercase tracking-[0.2em] animate-pulse", style: "color: var(--accent-color)", "Daily Intercepts" }
                                                 div { class: "flex items-center gap-4",
                                                     span { class: "text-3xl font-black", style: "color: var(--accent-color)", DataCounter { value: v.today_visitors as i32 } }
                                                     button {
@@ -275,6 +289,11 @@ fn Home() -> Element {
                                         class: "h-full bg-accent-color shadow-[0_0_20px_var(--accent-glow)] transition-all duration-1000",
                                         style: "width: {success_rate}%"
                                     }
+                                }
+                                Link {
+                                    to: Route::Contact {},
+                                    class: "mt-4 text-xs font-black uppercase tracking-[0.2em] opacity-80 hover:opacity-100 transition-opacity hover:text-accent-color",
+                                    "// INITIATE_UPLINK"
                                 }
                             }
                         }

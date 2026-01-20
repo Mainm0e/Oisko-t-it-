@@ -73,6 +73,7 @@ async fn main() {
         .route("/api/auth/login", post(routes::auth::login))
         .route("/api/auth/register", post(routes::auth::register))
         .route("/api/auth/verify", post(routes::auth::verify_email))
+        .route("/api/contact", post(routes::contact::send_contact_email))
         .route("/api/visit", post(routes::visitor::record_visit))
         .route(
             "/api/applications",

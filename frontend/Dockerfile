@@ -32,6 +32,19 @@ COPY . .
 ARG API_URL
 ENV API_URL=$API_URL
 
+# Debug: Show files and handle context
+RUN ls -la
+RUN if [ -f "Cargo.toml" ]; then \
+    echo "Found Cargo.toml in current directory"; \
+    elif [ -d "frontend" ] && [ -f "frontend/Cargo.toml" ]; then \
+    echo "Found frontend directory, moving there"; \
+    mv frontend/* . && mv frontend/.* . 2>/dev/null || true; \
+    else \
+    echo "ERROR: Could not find Cargo.toml anywhere!"; \
+    ls -R; \
+    exit 1; \
+    fi
+
 # Build the WASM and assets
 RUN dx build --release --platform web
 

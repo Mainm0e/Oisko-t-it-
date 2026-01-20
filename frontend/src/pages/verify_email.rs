@@ -35,7 +35,10 @@ pub fn VerifyEmail() -> Element {
         };
 
         match client
-            .post("http://localhost:3000/api/auth/verify")
+            .post(format!(
+                "{}/auth/verify",
+                crate::services::application_service::API_BASE_URL
+            ))
             .json(&payload)
             .send()
             .await

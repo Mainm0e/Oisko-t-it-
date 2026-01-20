@@ -29,7 +29,10 @@ pub fn Login() -> Element {
         };
 
         match client
-            .post("http://localhost:3000/api/auth/login")
+            .post(format!(
+                "{}/auth/login",
+                crate::services::application_service::API_BASE_URL
+            ))
             .json(&payload)
             .send()
             .await

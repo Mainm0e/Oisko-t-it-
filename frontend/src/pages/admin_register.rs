@@ -39,7 +39,10 @@ pub fn AdminRegister() -> Element {
 
         // TODO: Make base URL configurable
         let res = client
-            .post("http://localhost:3000/api/auth/register")
+            .post(format!(
+                "{}/auth/register",
+                crate::services::application_service::API_BASE_URL
+            ))
             .json(&payload)
             .send()
             .await;

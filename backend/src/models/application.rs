@@ -74,3 +74,9 @@ pub struct UpdateApplication {
     pub logo_url: Option<String>,
     pub description: Option<String>,
 }
+
+#[derive(Debug, FromRow)]
+pub struct AppInfo {
+    pub company: String,
+    pub role: String,
+}

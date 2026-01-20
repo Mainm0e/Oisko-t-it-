@@ -285,10 +285,10 @@ pub async fn create_comment(
     use crate::models::comment::Comment;
 
     // Get application info for the event
-    let app_info = sqlx::query!(
+    let app_info = sqlx::query_as::<_, crate::models::application::AppInfo>(
         "SELECT company, role FROM applications WHERE id = $1",
-        application_id
     )
+    .bind(application_id)
     .fetch_optional(&pool)
     .await;
 

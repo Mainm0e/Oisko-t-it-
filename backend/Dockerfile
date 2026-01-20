@@ -11,4 +11,5 @@ RUN apt-get update && apt-get install -y libssl3 ca-certificates
 WORKDIR /app
 COPY --from=builder /app/target/release/backend .
 EXPOSE 3000
+RUN mkdir -p uploads
 CMD ["./backend"]

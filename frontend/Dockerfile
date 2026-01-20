@@ -46,7 +46,11 @@ RUN if [ -f "Cargo.toml" ]; then \
     fi
 
 # Build the WASM and assets
-RUN dx build --release --platform web
+# Disabling minify to avoid wasm-opt crashes (it was crashing with DWARF errors)
+RUN dx build --release --platform web --no-minify
+
+# Create a generic dist folder for simplicity
+RUN cp -r /app/target/dx/frontend/release/web/public /app/dist
 
 # Serve Stage (Using Nginx)
 FROM nginx:stable-alpine

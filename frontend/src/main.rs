@@ -213,6 +213,13 @@ fn Home() -> Element {
                         class: "hover:text-accent-color transition-colors flex items-center gap-2",
                         "SOURCE_CODE ↗"
                     }
+                    span { class: "hidden md:inline mx-2 opacity-30", "|" }
+                    a {
+                        href: "https://github.com/Mainm0e",
+                        target: "_blank",
+                        class: "hover:text-accent-color transition-colors flex items-center gap-2",
+                        "CREATOR_LOGS ↗"
+                    }
                 }
 
                 div { class: "mt-12 group relative inline-block",

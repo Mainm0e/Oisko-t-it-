@@ -16,6 +16,8 @@ pub struct Comment {
 pub struct CreateComment {
     pub visitor_name: String,
     pub content: String,
+    // Honeypot field
+    pub bot_field: Option<String>,
 }
 
 #[derive(Debug, Serialize, Deserialize, FromRow)]

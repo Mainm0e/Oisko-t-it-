@@ -7,6 +7,7 @@ struct ContactPayload {
     email: String,
     link: Option<String>,
     message: String,
+    bot_field: Option<String>,
 }
 
 #[component]
@@ -15,6 +16,7 @@ pub fn Contact() -> Element {
     let mut email = use_signal(|| String::new());
     let mut link = use_signal(|| String::new());
     let mut message = use_signal(|| String::new());
+    let mut bot_field = use_signal(|| String::new());
     let mut is_submitting = use_signal(|| false);
     let mut success_message = use_signal(|| Option::<String>::None);
     let mut error_message = use_signal(|| Option::<String>::None);
@@ -38,6 +40,11 @@ pub fn Contact() -> Element {
                 Some(link())
             },
             message: message(),
+            bot_field: if bot_field().is_empty() {
+                None
+            } else {
+                Some(bot_field())
+            },
         };
 
         let client = reqwest::Client::new();
@@ -107,6 +114,16 @@ pub fn Contact() -> Element {
                             disabled: is_submitting()
                         }
                     }
+
+                    // Honeypot field (hidden from users, visible to bots)
+                    input {
+                        class: "hidden",
+                        name: "bot_field",
+                        style: "display:none;",
+                        value: "{bot_field}",
+                        oninput: move |e| bot_field.set(e.value())
+                    }
+
 
                     div { class: "space-y-2",
                         label { class: "block text-xs font-bold uppercase tracking-[0.2em] text-gray-400", "Secure Frequency // Email" }

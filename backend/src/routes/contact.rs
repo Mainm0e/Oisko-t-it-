@@ -8,6 +8,8 @@ pub struct ContactPayload {
     email: String,
     message: String,
     link: Option<String>,
+    // Honeypot field - should be empty for humans
+    bot_field: Option<String>,
 }
 
 #[derive(Serialize)]
@@ -21,6 +23,19 @@ pub struct ErrorResponse {
 }
 
 pub async fn send_contact_email(Json(payload): Json<ContactPayload>) -> impl IntoResponse {
+    // 1. Bot Detection (Honeypot)
+    if let Some(val) = &payload.bot_field {
+        if !val.is_empty() {
+            // It's a bot. Return success to fool them, but do nothing.
+            return (
+                StatusCode::OK,
+                Json(ContactResponse {
+                    message: "Message sent successfully".to_string(),
+                }),
+            )
+                .into_response();
+        }
+    }
     let api_key = match env::var("RESEND_API_KEY") {
         Ok(key) => key,
         Err(_) => {

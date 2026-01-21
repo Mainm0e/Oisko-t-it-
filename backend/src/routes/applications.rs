@@ -3,13 +3,13 @@ use crate::models::event::AppEvent;
 use crate::routes::auth::Claims;
 use async_stream::stream;
 use axum::{
-    Json,
     extract::{Path, State},
     http::StatusCode,
     response::{
-        IntoResponse,
         sse::{Event, Sse},
+        IntoResponse,
     },
+    Json,
 };
 use futures_util::stream::Stream;
 use sqlx::PgPool;
@@ -283,6 +283,24 @@ pub async fn create_comment(
     Json(payload): Json<crate::models::comment::CreateComment>,
 ) -> impl IntoResponse {
     use crate::models::comment::Comment;
+
+    // 1. Bot Detection (Honeypot)
+    if let Some(val) = &payload.bot_field {
+        if !val.is_empty() {
+            // Fake success for bots
+            return (
+                StatusCode::CREATED,
+                Json(Comment {
+                    id: Uuid::new_v4(),
+                    application_id,
+                    visitor_name: payload.visitor_name,
+                    content: payload.content,
+                    created_at: chrono::Utc::now().naive_utc(),
+                }),
+            )
+                .into_response();
+        }
+    }
 
     // Get application info for the event
     let app_info = sqlx::query_as::<_, crate::models::application::AppInfo>(

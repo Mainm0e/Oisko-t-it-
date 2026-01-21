@@ -144,7 +144,7 @@ pub fn Contact() -> Element {
                     }
 
                     button {
-                        class: "w-full py-6 bg-white text-black font-black uppercase tracking-[0.4em] text-sm hover:scale-[1.02] hover:shadow-[0_0_30px_rgba(255,255,255,0.3)] active:scale-[0.99] transition-all disabled:opacity-50 disabled:cursor-not-allowed relative overflow-hidden group",
+                        class: "w-full py-4 bg-white text-black font-black uppercase tracking-[0.4em] text-sm hover:scale-[1.02] hover:shadow-[0_0_30px_rgba(255,255,255,0.3)] active:scale-[0.99] transition-all disabled:opacity-50 disabled:cursor-not-allowed relative overflow-hidden group",
                         onclick: submit,
                         disabled: is_submitting(),
 

@@ -211,7 +211,7 @@ fn Home() -> Element {
                 div { class: "mt-12 group relative inline-block",
                     Link {
                         to: Route::Contact {},
-                        class: "px-12 py-6 bg-white text-black font-black uppercase tracking-[0.4em] text-sm hover:scale-[1.02] hover:shadow-[0_0_30px_rgba(255,255,255,0.3)] active:scale-[0.99] transition-all relative overflow-hidden inline-block",
+                        class: "px-10 py-4 bg-white text-black font-black uppercase tracking-[0.4em] text-sm hover:scale-[1.02] hover:shadow-[0_0_30px_rgba(255,255,255,0.3)] active:scale-[0.99] transition-all relative overflow-hidden inline-block",
                         "Offer Protocol // Initiate"
                         div { class: "absolute inset-0 bg-black/10 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-500 pointer-events-none" }
                     }

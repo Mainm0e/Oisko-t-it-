@@ -1,6 +1,8 @@
-# Oisko töitä (Job Hunt Command Center)
+# Oisko töitä
 
-**Oisko töitä** is a high-performance, futuristic job application tracking platform built with Rust. It transforms the often tedious process of job searching into a tactical operation, featuring a "Command Center" aesthetic, real-time intelligence feeds, and interactive dossiers.
+**Oisko töitä** is a project created for the Job Hunter of 2026. It allows you to host your entire job search history and publicly showcase your applications, inviting the world to witness and scrutinize your process—offering undeniable proof of your performance and dedication.
+
+![Command Center Interface](docs/screenshots/landing_page.png)
 
 ## 🛰 Tactical Overview
 
@@ -15,6 +17,8 @@
 - **Tri-Mode OS (Theming)**: Seamless switching between **Tactical Noir** (Dark), **Pristine Light** (Light), and **Bamboo Zen** (Organic) aesthetics with persistent memory.
 - **Daily Signal Intercepts**: Real-time visitor tracking and analytics displayed on the main console.
 
+![Tactical Recognition](docs/screenshots/tactical_popup.png)
+
 ### 2. Scalable Mission Log (Public Interface)
 - **High-Performance Search**: Instant client-side search across company names and roles.
 - **Status Filter Arrays**: Real-time filtering by application state (Applied, Interviewing, Offer, etc.).
@@ -27,25 +31,8 @@
 - **Intelligence Input**: Streamlined "SCAN WEB" utility that automatically extracts company data from URLs.
 - **Document Depot**: Secure multi-part upload system for CVs and cover letters.
 
-## 🚀 Future Reconnaissance (Roadmap 2.0)
+![Admin Command Center](docs/screenshots/admin_dashboard.png)
 
-To achieve maximum dominance in the IT job market, the following strategic updates are planned:
-
-### 1. AI-Powered Mission Briefings (LLM Integration)
-- **Goal**: Integrate an LLM to automatically generate tailored cover letters and interview prep notes based on the "scraped" company intel.
-- **Impact**: Demonstrates mastery of AI integration and tailored automation.
-
-### 2. Strategic Analytics Dashboard
-- **Goal**: Implement advanced metrics like "Time-to-Offer" averages, "Interview Conversion Probabilities", and sector-specific success heatmaps.
-- **Impact**: Shows deep data-driven decision-making capabilities.
-
-### 3. Recruiter "Ghost" Access
-- **Goal**: Create specialized, read-only "Secure Links" for recruiters that provide a customized view of relevant dossiers and hidden skills metadata.
-- **Impact**: Direct, frictionless value delivery to hiring managers.
-
-### 4. GitHub Sync Protocol
-- **Goal**: Automatically link specific GitHub repositories or commits to job applications as proof-of-competence for specific roles.
-- **Impact**: Closes the loop between application and verifiable coding skill.
 
 ---
 
@@ -56,6 +43,10 @@ To achieve maximum dominance in the IT job market, the following strategic updat
 - **Infrastructure**: Automated migrations, Secure multi-part file handling.
 
 ---
+
+## ⚡️ Initialization (Local Dev)
+
+For detailed local development instructions, see the **[Setup Guide](SETUP_GUIDE.md)**.
 
 ## 🛳 Deployment Prep
 
@@ -70,3 +61,9 @@ To launch the Command Center in a live sector:
    - Set `API_URL` environment variable to your backend domain (e.g., `https://api.yourdomain.com`).
    - Build for production: `dx build --release`.
    - Deploy the generated `dist` folder to your CDN or web server.
+
+---
+
+## 📄 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.

@@ -158,6 +158,13 @@ pub fn Contact() -> Element {
                         div { class: "absolute inset-0 bg-white/20 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-500" }
                     }
                 }
+                div { class: "mt-8 text-center",
+                    Link {
+                        to: crate::Route::Home {},
+                        class: "text-xs font-mono uppercase tracking-[0.2em] opacity-40 hover:opacity-100 transition-opacity hover:text-accent-color",
+                        "<< RETURN_TO_COMMAND_CENTER"
+                    }
+                }
             }
         }
     }

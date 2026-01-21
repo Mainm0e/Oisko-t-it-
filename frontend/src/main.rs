@@ -71,13 +71,13 @@ fn App() -> Element {
     });
 
     rsx! {
-        document::Title { "Oisko töitä | Job Hunt Command Center" }
-        document::Meta { name: "description", content: "Futuristic job application mission control. Track your career operations with tactical precision." }
+        document::Title { "Oisko töitä | Blazingly Fast Job Hunt 2026 🚀" }
+        document::Meta { name: "description", content: "Public job hunt history and performance proof for the 2026 job market. Blazingly fast." }
 
         // Open Graph
         document::Meta { property: "og:site_name", content: "Oisko töitä" }
-        document::Meta { property: "og:title", content: "Oisko töitä | Command Center" }
-        document::Meta { property: "og:description", content: "High-performance job application tracking with real-time signal monitoring." }
+        document::Meta { property: "og:title", content: "Oisko töitä | Blazingly Fast Job Hunt 🚀" }
+        document::Meta { property: "og:description", content: "Host your entire job search history and publicly showcase your applications. Undeniable proof of performance." }
         document::Meta { property: "og:type", content: "website" }
         document::Meta { property: "og:image", content: asset!("/assets/og-image.png") }
         document::Meta { property: "og:image:width", content: "1200" }
@@ -85,8 +85,8 @@ fn App() -> Element {
 
         // Twitter Card
         document::Meta { name: "twitter:card", content: "summary_large_image" }
-        document::Meta { name: "twitter:title", content: "Oisko töitä | Command Center" }
-        document::Meta { name: "twitter:description", content: "High-performance job application tracking with real-time signal monitoring." }
+        document::Meta { name: "twitter:title", content: "Oisko töitä | Blazingly Fast Job Hunt 🚀" }
+        document::Meta { name: "twitter:description", content: "Host your entire job search history and publicly showcase your applications. Undeniable proof of performance." }
         document::Meta { name: "twitter:image", content: asset!("/assets/og-image.png") }
 
         document::Link { rel: "icon", href: FAVICON }

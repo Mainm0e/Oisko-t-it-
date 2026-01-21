@@ -42,6 +42,10 @@ cd backend
 # Create .env file (Optional, or rely on defaults)
 echo "DATABASE_URL=postgres://admin:password@localhost:5433/oisko_db" > .env
 
+# [IMPORTANT] Create Uploads Directory
+# This folder is required for saving CVs and Cover Letters.
+mkdir -p uploads
+
 # Run Migrations
 sqlx database create
 sqlx migrate run

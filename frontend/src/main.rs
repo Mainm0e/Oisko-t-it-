@@ -23,7 +23,7 @@ use components::terminal_text::TerminalText;
 
 #[derive(Debug, Clone, Routable, PartialEq)]
 #[rustfmt::skip]
-enum Route {
+pub enum Route {
     #[layout(Navbar)]
     #[route("/")]
     Home {},
@@ -60,8 +60,8 @@ fn PageNotFound(segments: Vec<String>) -> Element {
     rsx! {
         div { class: "min-h-screen flex flex-col items-center justify-center p-4 text-center scanline",
             div { class: "glass p-12 rounded-lg border border-red-500/30 relative overflow-hidden",
-                div { class: "absolute inset-0 bg-red-500/5" }
-                h1 { class: "text-4xl md:text-6xl font-black text-red-500 mb-6 glitch-text", "NAVIGATIONAL_ERROR" }
+                div { class: "absolute inset-0 bg-red-500/5 pointer-events-none" }
+                h1 { class: "text-4xl md::text-6xl font-black text-red-500 mb-6 glitch-text", "NAVIGATIONAL_ERROR" }
                 p { class: "text-lg font-mono mb-8 opacity-80 uppercase tracking-widest",
                     "You are in the wrong sector."
                     br {}

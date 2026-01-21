@@ -206,6 +206,13 @@ fn Home() -> Element {
                     }
                     span { class: "hidden md:inline mx-2 opacity-30", "|" }
                     span { "DATE: {sys_time}" }
+                    span { class: "hidden md:inline mx-2 opacity-30", "|" }
+                    a {
+                        href: "https://github.com/Mainm0e/Oisko-t-it-",
+                        target: "_blank",
+                        class: "hover:text-accent-color transition-colors flex items-center gap-2",
+                        "SOURCE_CODE ↗"
+                    }
                 }
 
                 div { class: "mt-12 group relative inline-block",

@@ -179,7 +179,7 @@ pub fn Contact() -> Element {
                     Link {
                         to: crate::Route::Home {},
                         class: "text-xs font-mono uppercase tracking-[0.2em] opacity-40 hover:opacity-100 transition-opacity hover:text-accent-color",
-                        "<< RETURN_TO_COMMAND_CENTER"
+                        "<< RETURN_TO_BASE"
                     }
                 }
             }

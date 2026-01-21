@@ -41,6 +41,9 @@ enum Route {
     #[route("/admin/verify")]
     VerifyEmail {},
 
+    #[route("/:..segments")]
+    PageNotFound { segments: Vec<String> },
+
     #[layout(AdminLayout)]
         #[route("/admin/dashboard")]
         AdminDashboard {},
@@ -50,6 +53,28 @@ enum Route {
         ApplicationCreate {},
         #[route("/admin/applications/:id/edit")]
         ApplicationEdit { id: String },
+}
+
+#[component]
+fn PageNotFound(segments: Vec<String>) -> Element {
+    rsx! {
+        div { class: "min-h-screen flex flex-col items-center justify-center p-4 text-center scanline",
+            div { class: "glass p-12 rounded-lg border border-red-500/30 relative overflow-hidden",
+                div { class: "absolute inset-0 bg-red-500/5" }
+                h1 { class: "text-4xl md:text-6xl font-black text-red-500 mb-6 glitch-text", "NAVIGATIONAL_ERROR" }
+                p { class: "text-lg font-mono mb-8 opacity-80 uppercase tracking-widest",
+                    "You are in the wrong sector."
+                    br {}
+                    "Please return to the main frequency."
+                }
+                Link {
+                    to: Route::Home {},
+                    class: "inline-block px-8 py-4 bg-white text-black font-black uppercase tracking-[0.2em] hover:scale-105 transition-transform",
+                    "<< RETURN_TO_BASE"
+                }
+            }
+        }
+    }
 }
 
 const FAVICON: Asset = asset!("/assets/favicon.ico");

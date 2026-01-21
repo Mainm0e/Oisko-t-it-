@@ -1,4 +1,4 @@
-# Oisko töitä
+# Oisko töitä (Blazingly Fast 🚀)
 
 **Oisko töitä** is a project created for the Job Hunter of 2026. It allows you to host your entire job search history and publicly showcase your applications, inviting the world to witness and scrutinize your process—offering undeniable proof of your performance and dedication.
 

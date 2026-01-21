@@ -3,7 +3,7 @@
 [web.app]
 
 # HTML title tag content
-title = "frontend"
+title = "Oisko töitä | Blazingly Fast Job Hunt 2026 🚀"
 
 # include `assets` in web platform
 [web.resource]
